@@ -20,7 +20,6 @@ namespace MvcMovie.Controllers
         }
 
         // GET: Movies
-        // GET: Movies
         public async Task<IActionResult> Index(string movieGenre, string searchString)
         {
             if (_context.Movie == null)
