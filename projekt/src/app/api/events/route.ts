@@ -1,23 +1,21 @@
 import db from '@/src/server/db/drizzle';
+import { Queries } from '@/src/server/db/queries';
+import { Mutations } from '@/src/server/db/queries';
 import { events } from '@/src/server/db/schema';
 
-export async function POST(NextRequest: Request) {
-  const { title, description, location, imageUrl, date, capacity, price } =
-    await NextRequest.json();
+export async function GET(NextRequest: Request) {
+  const events = await Queries.getEvents();
+  return new Response(JSON.stringify(events), { status: 200 });
+}
 
+export async function POST(NextRequest: Request) {
   try {
-    const event = await db
-      .insert(events)
-      .values({
-        title,
-        description,
-        location,
-        imageUrl,
-        date,
-        capacity,
-        price,
-      })
-      .returning();
+    const { title, description, location, imageUrl, date, capacity, price } =
+      await NextRequest.json();
+
+    const event = await Mutations.createEvent({
+      event: { title, description, location, imageUrl, date, capacity, price },
+    });
 
     return new Response(JSON.stringify(event), { status: 201 });
   } catch (error) {
