@@ -10,11 +10,32 @@ export async function GET(NextRequest: Request) {
 
 export async function POST(NextRequest: Request) {
   try {
-    const { title, description, location, imageUrl, date, capacity, price } =
-      await NextRequest.json();
+    const {
+      title,
+      description,
+      category,
+      location,
+      imageUrl,
+      date,
+      time,
+      capacity,
+      availableSeats,
+      price,
+    } = await NextRequest.json();
 
     const event = await Mutations.createEvent({
-      event: { title, description, location, imageUrl, date, capacity, price },
+      event: {
+        title,
+        description,
+        category,
+        location,
+        imageUrl,
+        date,
+        time,
+        capacity,
+        availableSeats,
+        price,
+      },
     });
 
     return new Response(JSON.stringify(event), { status: 201 });

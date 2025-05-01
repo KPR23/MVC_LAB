@@ -1,9 +1,8 @@
 import 'server-only';
-
+import { time } from 'drizzle-orm/pg-core';
 import db from './drizzle';
-import { events } from './schema';
 import { eq } from 'drizzle-orm';
-import { get } from 'http';
+import { events } from './schema';
 
 export const Queries = {
   getEvents: function () {
@@ -25,13 +24,20 @@ export const Mutations = {
     event: {
       title: string;
       description: string;
+      category: string;
       location: string;
+      time: string;
       imageUrl: string;
-      date: string;
+      date: Date;
       capacity: number;
+      availableSeats: number;
       price: number;
     };
   }) {
-    return await db.insert(events).values({ ...input.event });
+    return await db.insert(events).values({
+      ...input.event,
+      date: new Date(input.event.date).toISOString(),
+      time: input.event.time,
+    });
   },
 };
