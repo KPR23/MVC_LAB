@@ -1,5 +1,6 @@
 import { Queries } from '@/src/server/db/queries';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default async function EventsPage() {
   const events = await Queries.getEvents();
@@ -11,7 +12,11 @@ export default async function EventsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
         {events.length > 0 ? (
           events.map((event) => (
-            <div key={event.id} className="p-4 border rounded-lg shadow-md">
+            <Link
+              href={`/events/${encodeURIComponent(event.title)}`}
+              key={event.id}
+              className="p-4 border rounded-lg shadow-md"
+            >
               <h2 className="text-2xl font-semibold">{event.title}</h2>
               <p className="mt-2 text-gray-700">{event.description}</p>
               <p className="mt-2 text-gray-700">Location: {event.location}</p>
@@ -25,7 +30,7 @@ export default async function EventsPage() {
                 //   width={500}
                 //   height={300}
               />
-            </div>
+            </Link>
           ))
         ) : (
           <div className="p-4 border rounded-lg shadow-md">
