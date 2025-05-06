@@ -1,7 +1,7 @@
 import { Queries } from '@/src/server/db/queries';
 import { Mutations } from '@/src/server/db/queries';
 
-export async function GET(NextRequest: Request) {
+export async function GET() {
   const events = await Queries.getEvents();
   return new Response(JSON.stringify(events), { status: 200 });
 }
