@@ -1,14 +1,29 @@
 import EventCard from '@/src/components/EventCard';
+import { Button } from '@/src/components/ui/button';
 import { Queries } from '@/src/server/db/queries';
+import { Plus } from 'lucide-react';
 
 export default async function EventsPage() {
   const events = await Queries.getEvents();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2">
-      <h1 className="text-4xl font-bold">Events</h1>
-      <p className="mt-4 text-lg">Welcome to the events page!</p>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 justify-items-center">
+    <div className="flex flex-col items-center justify-center">
+      <div className="flex justify-between items-center bg-card py-8 px-[165px] mb-8 w-full">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold">Przeglądaj wydarzenia</h1>
+          <p className="text-muted-foreground">
+            Odkryj i zakup bilety na nadchodzące wydarzenia
+          </p>
+        </div>
+        <div>
+          <Button className="gap-1" variant={'outline'}>
+            <Plus />
+            Dodaj wydarzenie
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-items-center">
         {events.length > 0 ? (
           events.map((event) => <EventCard key={event.id} event={event} />)
         ) : (
