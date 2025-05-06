@@ -13,6 +13,7 @@ export const events = pgTable('events', {
   title: text('title').notNull(),
   description: text('description').notNull(),
   category: text('category').notNull(),
+  city: text('city').notNull(),
   location: text('location').notNull(),
   imageUrl: text('image_url').notNull(),
   date: date('date').notNull(),

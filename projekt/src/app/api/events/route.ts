@@ -1,7 +1,5 @@
-import db from '@/src/server/db/drizzle';
 import { Queries } from '@/src/server/db/queries';
 import { Mutations } from '@/src/server/db/queries';
-import { events } from '@/src/server/db/schema';
 
 export async function GET(NextRequest: Request) {
   const events = await Queries.getEvents();
@@ -14,6 +12,7 @@ export async function POST(NextRequest: Request) {
       title,
       description,
       category,
+      city,
       location,
       imageUrl,
       date,
@@ -28,6 +27,7 @@ export async function POST(NextRequest: Request) {
         title,
         description,
         category,
+        city,
         location,
         imageUrl,
         date,

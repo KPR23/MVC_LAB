@@ -1,5 +1,5 @@
 import 'server-only';
-import { time } from 'drizzle-orm/pg-core';
+
 import db from './drizzle';
 import { eq } from 'drizzle-orm';
 import { events } from './schema';
@@ -25,6 +25,7 @@ export const Mutations = {
       title: string;
       description: string;
       category: string;
+      city: string;
       location: string;
       time: string;
       imageUrl: string;
