@@ -15,6 +15,14 @@ export default function EventCard({ event }: EventCardProps) {
     if (!word) return '';
     return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
   }
+
+  function createSlug(text: string) {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  }
+
   const date = new Date(event.date);
   const formattedDate = date.toLocaleDateString('pl-PL', {
     day: '2-digit',
@@ -26,11 +34,11 @@ export default function EventCard({ event }: EventCardProps) {
     dayName = dayName.slice(0, -1);
   }
   const displayDayName = capitalizeFirstLetter(dayName);
+
+  const eventSlug = `${createSlug(event.category)}/${createSlug(event.title)}`;
+
   return (
-    <Link
-      href={`/events/${encodeURIComponent(event.title)}`}
-      className="w-[380px]"
-    >
+    <Link href={`/events/${eventSlug}`} className="w-[380px]">
       <Card className="overflow-hidden hover-scale h-full pb-6">
         <div className="relative overflow-hidden">
           <Image
