@@ -1,7 +1,8 @@
 import EventCard from '@/src/components/EventCard';
 import { Button } from '@/src/components/ui/button';
+import { Card, CardContent, CardTitle } from '@/src/components/ui/card';
 import { Queries } from '@/src/server/db/queries';
-import { Plus } from 'lucide-react';
+import { Plus, Ticket } from 'lucide-react';
 
 export default async function EventsPage() {
   const events = await Queries.getEvents();
@@ -16,14 +17,14 @@ export default async function EventsPage() {
           </p>
         </div>
         <div>
-          <Button className="gap-1" variant={'outline'}>
+          <Button className="gap-1" variant="outline">
             <Plus />
             Dodaj wydarzenie
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4 justify-items-center w-full px-20">
+      <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-4 justify-items-center w-full px-40">
         {events.length > 0 ? (
           events.map((event) => (
             <div key={event.id} className="w-full max-w-[380px] flex-shrink-0">
@@ -31,9 +32,14 @@ export default async function EventsPage() {
             </div>
           ))
         ) : (
-          <div className="p-4 border rounded-lg shadow-md">
-            <h2 className="text-2xl font-semibold">No events found</h2>
-            <p className="mt-2 text-gray-700">Please check back later.</p>
+          <div className="col-span-full row-span-full flex flex-col space-y-2 items-center justify-center h-screen w-full">
+            <Ticket size={42} className="text-muted-foreground" />
+            <div className="text-center space-y-2">
+              <h2 className="text-lg font-bold">Nie znaleziono wydarzeń</h2>
+              <p className="text-muted-foreground text-md">
+                Obecnie nie ma dostępnych wydarzeń spełniających Twoje kryteria.
+              </p>
+            </div>
           </div>
         )}
       </div>

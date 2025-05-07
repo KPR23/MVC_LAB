@@ -1,0 +1,98 @@
+openapi: 3.1.0
+info:
+  title: My API
+  version: 1.0.0
+  description: API documentation for my application
+
+paths:
+  /api/events:
+    get:
+      summary: Get all events
+      description: Retrieve a list of all events
+      responses:
+        '200':
+          description: Successful response with a list of events
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Event'
+                  message:
+                    type: string
+                    example: Successful response with a list of events
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Failed to fetch events'
+components:
+  schemas:
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the event
+          example: e9af75dd-dd9b-4dea-8a53-91ce0ce0dab7
+        title:
+          type: string
+          description: Title of the event
+          example: 'Title of the event'
+        description:
+          type: string
+          description: Description of the event
+          example: Description of the event
+        category:
+          type: string
+          description: Category of the event
+          example: Category of the event
+        city:
+          type: string
+          description: City where the event is located
+          example: City
+        location:
+          type: string
+          description: Location of the event
+          example: Location
+        imageUrl:
+          type: string
+          format: url
+          description: URL of the event image
+          example: URL of the event image
+        date:
+          type: string
+          format: date
+          description: Date of the event (YYYY-MM-DD)
+          example: '2025-11-30'
+        time:
+          type: string
+          format: time
+          description: Time of the event (HH:MM:SS)
+          example: '17:30:00'
+        capacity:
+          type: integer
+          description: Maximum capacity of the event
+          example: 1000
+        availableSeats:
+          type: integer
+          description: Number of available seats for the event
+          example: 1000
+        price:
+          type: integer
+          description: Price of the event in cents/groszy
+          example: 19499
+        createdAt:
+          type: string
+          format: date-time
+          description: Date and time when the event was created
+          example: '2025-05-06T16:36:03.549Z'
