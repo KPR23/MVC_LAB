@@ -1,6 +1,5 @@
 import EventCard from '@/src/components/EventCard';
 import { Button } from '@/src/components/ui/button';
-import { Card, CardContent, CardTitle } from '@/src/components/ui/card';
 import { Queries } from '@/src/server/db/queries';
 import { Plus, Ticket } from 'lucide-react';
 
