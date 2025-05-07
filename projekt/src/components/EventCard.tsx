@@ -69,13 +69,6 @@ export default function EventCard({ event }: EventCardProps) {
             <span className="text-sm">{event.city}</span>
           </div>
         </CardContent>
-
-        {/* <CardFooter className="pt-0 grid grid-cols-2 gap-4 w-full">
-          <Button variant="outline" className="text-muted-foreground">
-            Szczegóły
-          </Button>
-          <Button className="font-semibold">Kup bilet</Button>
-        </CardFooter> */}
       </Card>
     </Link>
   );

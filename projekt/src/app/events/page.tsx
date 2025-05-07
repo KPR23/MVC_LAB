@@ -1,4 +1,4 @@
-import EventCard from '@/src/components/EventCard';
+import { EventCard } from '@/src/components';
 import { Button } from '@/src/components/ui/button';
 import { Queries } from '@/src/server/db/queries';
 import { Plus, Ticket } from 'lucide-react';
@@ -10,13 +10,15 @@ export default async function EventsPage() {
     <div className="flex flex-col items-center justify-center">
       <div className="flex justify-between items-center bg-card py-8 px-[165px] mb-8 w-full">
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Przeglądaj wydarzenia</h1>
+          <h1 className="text-3xl font-bold">
+            Przeglądaj <span className="text-primary">wydarzenia</span>
+          </h1>
           <p className="text-muted-foreground">
             Odkryj i zakup bilety na nadchodzące wydarzenia
           </p>
         </div>
         <div>
-          <Button className="gap-1" variant="outline">
+          <Button className="gap-1">
             <Plus />
             Dodaj wydarzenie
           </Button>
