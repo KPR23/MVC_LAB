@@ -1,17 +1,7 @@
 import { Queries } from '@/src/server/db/queries';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import Link from 'next/link';
-import {
-  Calendar,
-  Heart,
-  MapPin,
-  Bell,
-  Share2,
-  ChevronRight,
-  Clock,
-  Ticket,
-} from 'lucide-react';
+import { Calendar, MapPin, Ticket } from 'lucide-react';
 import { Badge } from '@/src/components/ui/badge';
 import { EventTicketCard } from '@/src/components';
 import { Button } from '@/src/components/ui/button';
@@ -35,15 +25,6 @@ export default async function EventPage(props: {
   if (!event) {
     notFound();
   }
-
-  const date = new Date(event.date);
-  const formattedDate = date.toLocaleDateString('pl-PL', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  });
-  const dayName = date.toLocaleDateString('pl-PL', { weekday: 'long' });
-  const priceInPLN = event.price / 100;
 
   return (
     <div className="mx-64 px-10 py-6">
