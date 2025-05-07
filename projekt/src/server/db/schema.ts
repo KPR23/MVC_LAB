@@ -11,6 +11,7 @@ import {
 export const events = pgTable('events', {
   id: uuid('id').primaryKey().defaultRandom(),
   title: text('title').notNull(),
+  artists: text('artists').notNull(),
   description: text('description').notNull(),
   category: text('category').notNull(),
   city: text('city').notNull(),
