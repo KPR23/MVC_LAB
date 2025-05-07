@@ -7,11 +7,11 @@ export default async function EventsPage() {
   const events = await Queries.getEvents();
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="flex justify-between items-center bg-card py-8 px-[165px] mb-8 w-full">
+    <div className="flex flex-col items-center justify-center w-full">
+      <div className="flex justify-between items-center bg-card py-8 px-40 mb-8 w-full">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold">
-            Przeglądaj <span className="text-primary">wydarzenia</span>
+            Przeglądaj <span className="text-primary">wydarzenia.</span>
           </h1>
           <p className="text-muted-foreground">
             Odkryj i zakup bilety na nadchodzące wydarzenia
@@ -25,10 +25,10 @@ export default async function EventsPage() {
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-4 justify-items-center w-full px-40">
+      <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 py-4 max-w-screen-xl mx-auto">
         {events.length > 0 ? (
           events.map((event) => (
-            <div key={event.id} className="w-full max-w-[380px] flex-shrink-0">
+            <div key={event.id} className="w-full max-w-[290px] flex-shrink-0">
               <EventCard event={event} />
             </div>
           ))

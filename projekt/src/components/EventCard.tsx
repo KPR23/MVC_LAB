@@ -37,18 +37,20 @@ export default function EventCard({ event }: EventCardProps) {
   const eventSlug = `${createSlug(event.category)}/${createSlug(event.title)}`;
 
   return (
-    <Link href={`/events/${eventSlug}`} className="w-[380px]">
+    <Link href={`/events/${eventSlug}`}>
       <Card className="overflow-hidden hover-scale h-full pb-6">
-        <div className="relative overflow-hidden">
+        <div className="relative overflow-hidden aspect-[3/4] ">
           <Image
             src={event.imageUrl}
             alt={event.title}
-            className="w-full h-full object-cover"
-            width={500}
-            height={500}
+            fill
+            objectFit="cover"
           />
-          <div className="absolute top-3 right-3">
+          <div className="absolute top-3 right-3 flex">
             <Badge className="rounded-full">{event.category}</Badge>
+            <Badge className="rounded-full ml-2">
+              {capitalizeFirstLetter(event.city)}
+            </Badge>
           </div>
         </div>
 
