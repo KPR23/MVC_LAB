@@ -33,7 +33,7 @@ export default async function EventsPage() {
             </div>
           ))
         ) : (
-          <div className="col-span-full row-span-full flex flex-col space-y-2 items-center justify-center h-screen w-full">
+          <div className="col-span-full row-span-full flex flex-col space-y-2 items-center justify-center h-128 w-full">
             <Ticket size={42} className="text-muted-foreground" />
             <div className="text-center space-y-2">
               <h2 className="text-lg font-bold">Nie znaleziono wydarzeń</h2>

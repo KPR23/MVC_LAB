@@ -23,14 +23,15 @@ export const Mutations = {
   createEvent: async function (input: {
     event: {
       title: string;
-      artists: string;
       description: string;
+      artists: string;
+      organizer: string;
       category: string;
       city: string;
       location: string;
-      time: string;
       imageUrl: string;
       date: Date;
+      time: string;
       capacity: number;
       availableSeats: number;
       price: number;

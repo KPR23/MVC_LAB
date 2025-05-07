@@ -22,8 +22,9 @@ export async function POST(NextRequest: Request) {
   try {
     const {
       title,
-      artists,
       description,
+      artists,
+      organizer,
       category,
       city,
       location,
@@ -38,8 +39,9 @@ export async function POST(NextRequest: Request) {
     const event = await Mutations.createEvent({
       event: {
         title,
-        artists,
         description,
+        artists,
+        organizer,
         category,
         city,
         location,
