@@ -23,9 +23,13 @@ export default async function EventsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-items-center">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4 justify-items-center w-full px-20">
         {events.length > 0 ? (
-          events.map((event) => <EventCard key={event.id} event={event} />)
+          events.map((event) => (
+            <div key={event.id} className="w-full max-w-[380px] flex-shrink-0">
+              <EventCard event={event} />
+            </div>
+          ))
         ) : (
           <div className="p-4 border rounded-lg shadow-md">
             <h2 className="text-2xl font-semibold">No events found</h2>
