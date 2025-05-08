@@ -18,7 +18,7 @@ export default function EventTicketCard(event: DB_EventType) {
       <div className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-8 bg-muted rounded-r-full z-10"></div>
       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-8 bg-muted rounded-l-full z-10"></div>
       <div className="rounded-lg">
-        <div className="flex flex-col md:flex-row">
+        <div className="flex flex-col items-center md:flex-row">
           <div className="p-6 md:w-1/6 md:border-r border-dashed border-muted">
             <div className="text-muted-foreground">{dayName}</div>
             <div className="text-xl font-bold text-foreground">
@@ -29,7 +29,7 @@ export default function EventTicketCard(event: DB_EventType) {
             </div>
           </div>
 
-          <div className="p-6 md:w-3/6 md:border-r border-dashed border-muted">
+          <div className="p-6 items-center md:w-3/6 md:border-r border-dashed border-muted">
             <div className="text-muted-foreground text-sm mb-1 line-clamp-1">
               {event.organizer}
             </div>
