@@ -1,4 +1,13 @@
-import { EventCard } from '@/src/components';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { AddEventForm, EventCard } from '@/src/components';
 import { Button } from '@/src/components/ui/button';
 import { Queries } from '@/src/server/db/queries';
 import { Plus, Ticket } from 'lucide-react';
@@ -18,10 +27,25 @@ export default async function EventsPage() {
           </p>
         </div>
         <div>
-          <Button className="gap-1">
-            <Plus />
-            Dodaj wydarzenie
-          </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="gap-1">
+                <Plus />
+                Dodaj wydarzenie
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[800px] overflow-y-scroll max-h-[90vh]">
+              <DialogHeader>
+                <DialogTitle>Dodaj wydarzenie</DialogTitle>
+                <DialogDescription>
+                  Utwórz nowe wydarzenie uzupełniając wszystkie pola.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="">
+                <AddEventForm />
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
