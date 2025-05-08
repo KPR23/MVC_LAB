@@ -1,5 +1,5 @@
 'use client';
-import React, { forwardRef, useCallback, useState } from 'react';
+import React, { forwardRef, useCallback } from 'react';
 import { useTimescape, type Options } from 'timescape/react';
 
 import { Input } from '@/components/ui/input';
@@ -147,7 +147,16 @@ export const DatetimePicker = forwardRef<HTMLDivElement, DateTimeInput>(
   ) => {
     const handleDateChange = useCallback(
       (nextDate: Date | undefined) => {
-        onChange ? onChange(nextDate) : console.log(nextDate);
+        const handleDateChange = useCallback(
+          (nextDate: Date | undefined) => {
+            if (onChange) {
+              onChange(nextDate);
+            } else {
+              console.log(nextDate);
+            }
+          },
+          [onChange]
+        );
       },
       [onChange]
     );
