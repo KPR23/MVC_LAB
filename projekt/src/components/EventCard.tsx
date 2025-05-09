@@ -44,7 +44,7 @@ export default function EventCard({ event }: EventCardProps) {
             src={event.imageUrl}
             alt={event.title}
             fill
-            objectFit="cover"
+            style={{ objectFit: 'cover' }}
           />
           <div className="absolute top-3 right-3 flex">
             <Badge className="rounded-full">{event.category}</Badge>
