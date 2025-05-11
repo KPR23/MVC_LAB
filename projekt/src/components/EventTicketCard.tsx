@@ -1,7 +1,7 @@
 import { Ticket } from 'lucide-react';
 import { DB_EventType } from '../server/db/schema';
-import { Card } from './ui/card';
 import { Button } from './ui/button';
+import { Card } from './ui/card';
 
 export default function EventTicketCard(event: DB_EventType) {
   function capitalizeFirstLetter(word: string) {
@@ -60,9 +60,14 @@ export default function EventTicketCard(event: DB_EventType) {
           <div className="p-6 md:w-2/6 flex flex-col items-center justify-center bg-card">
             <Button className="bg-primary transition-colors py-6 flex items-center gap-2 w-full justify-center">
               <Ticket className="w-5 h-5 text-white" />
-              <span>
-                Kup bilety od <span className="font-bold">{priceInPLN} zł</span>
-              </span>
+              {priceInPLN === 0 ? (
+                <span>To wydarzenie jest darmowe</span>
+              ) : (
+                <span>
+                  Kup bilety od{' '}
+                  <span className="font-bold">{priceInPLN} zł</span>
+                </span>
+              )}
             </Button>
             <div className="text-xs text-muted-foreground mt-2 text-center">
               Cena zawiera wszystkie opłaty obowiązkowe.

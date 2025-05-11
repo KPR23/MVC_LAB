@@ -1,15 +1,15 @@
 'use client';
 
-import * as React from 'react';
-import { format, addDays } from 'date-fns';
+import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { Calendar as CalendarIcon } from 'lucide-react';
+import * as React from 'react';
 
 import { cn } from '@/lib/utils';
-import { Popover, PopoverContent, PopoverTrigger } from './popover';
-import { Button } from './button';
 import { DateRange } from 'react-day-picker';
+import { Button } from './button';
 import { Calendar } from './calendar';
+import { Popover, PopoverContent, PopoverTrigger } from './popover';
 
 interface DatePickerWithRangeProps {
   className?: string;
@@ -54,7 +54,7 @@ export function DatePickerWithRange({
             id="date"
             variant={'outline'}
             className={cn(
-              'w-[300px] justify-start text-left font-normal',
+              'w-full justify-start text-left font-normal',
               !selectedDate && 'text-muted-foreground'
             )}
           >

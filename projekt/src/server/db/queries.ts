@@ -1,7 +1,7 @@
 import 'server-only';
 
-import db from './drizzle';
 import { eq } from 'drizzle-orm';
+import db from './drizzle';
 import { events } from './schema';
 
 export const Queries = {

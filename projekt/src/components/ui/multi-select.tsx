@@ -1,15 +1,15 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import { Badge } from '@/src/components/ui/badge';
 import {
   Command,
-  CommandItem,
   CommandEmpty,
+  CommandItem,
   CommandList,
 } from '@/src/components/ui/command';
-import { cn } from '@/lib/utils';
 import { Command as CommandPrimitive } from 'cmdk';
-import { X as RemoveIcon, Check } from 'lucide-react';
+import { Check, X as RemoveIcon } from 'lucide-react';
 import React, {
   KeyboardEvent,
   createContext,
@@ -379,9 +379,9 @@ MultiSelectorItem.displayName = 'MultiSelectorItem';
 
 export {
   MultiSelector,
-  MultiSelectorTrigger,
-  MultiSelectorInput,
   MultiSelectorContent,
-  MultiSelectorList,
+  MultiSelectorInput,
   MultiSelectorItem,
+  MultiSelectorList,
+  MultiSelectorTrigger,
 };

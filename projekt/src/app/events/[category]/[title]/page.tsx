@@ -1,11 +1,5 @@
-import { Queries } from '@/src/server/db/queries';
-import { notFound } from 'next/navigation';
-import Image from 'next/image';
-import { Calendar, MapPin, Ticket } from 'lucide-react';
-import { Badge } from '@/src/components/ui/badge';
 import { EventTicketCard } from '@/src/components';
-import { Button } from '@/src/components/ui/button';
-import Link from 'next/link';
+import { Badge } from '@/src/components/ui/badge';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -14,6 +8,12 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/src/components/ui/breadcrumb';
+import { Button } from '@/src/components/ui/button';
+import { Queries } from '@/src/server/db/queries';
+import { Calendar, MapPin, Ticket } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
 export default async function EventPage(props: {
   params: Promise<{ category: string; title: string }>;
@@ -148,7 +148,9 @@ export default async function EventPage(props: {
               <h2 className="text-3xl font-bold">Bilety</h2>
             </div>
 
-            <h3 className="text-2xl font-bold mb-6">Karnety</h3>
+            <h3 className="text-2xl font-bold mb-6">
+              {event.dateFrom === event.dateTo ? event.city : 'Karnety'}
+            </h3>
 
             {event.dateFrom !== event.dateTo ? (
               <>

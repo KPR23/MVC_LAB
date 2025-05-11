@@ -1,9 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Button } from '@/src/components/ui/button';
 import { Input } from '@/src/components/ui/input';
-import { Label } from '@/src/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -11,8 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/src/components/ui/select';
-import { Checkbox } from '@/src/components/ui/checkbox';
 import { Search, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent } from './ui/card';
 
 interface EventFilterProps {

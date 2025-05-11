@@ -1,20 +1,7 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/src/components/ui/dialog';
-import {
-  AddEventForm,
-  EventCard,
-  EventFilter,
-  EventListPage,
-} from '@/src/components';
+import { EventFilter, EventListPage } from '@/src/components';
 import { Button } from '@/src/components/ui/button';
 import { Queries } from '@/src/server/db/queries';
-import { Plus, Ticket } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function EventsPage() {

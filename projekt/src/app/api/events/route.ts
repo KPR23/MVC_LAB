@@ -1,5 +1,4 @@
-import { Queries } from '@/src/server/db/queries';
-import { Mutations } from '@/src/server/db/queries';
+import { Mutations, Queries } from '@/src/server/db/queries';
 import { NextResponse } from 'next/server';
 
 export async function GET() {

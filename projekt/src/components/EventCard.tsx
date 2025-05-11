@@ -1,9 +1,9 @@
 import { Calendar, MapPin } from 'lucide-react';
-import { Card, CardContent } from './ui/card';
-import { Badge } from './ui/badge';
+import Image from 'next/image';
 import Link from 'next/link';
 import { DB_EventType } from '../server/db/schema';
-import Image from 'next/image';
+import { Badge } from './ui/badge';
+import { Card, CardContent } from './ui/card';
 
 interface EventCardProps {
   event: DB_EventType;

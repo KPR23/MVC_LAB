@@ -1,11 +1,7 @@
 'use client';
 
-import { toast } from 'sonner';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/src/components/ui/button';
+import { Checkbox } from '@/src/components/ui/checkbox';
 import {
   Form,
   FormControl,
@@ -17,7 +13,11 @@ import {
 } from '@/src/components/ui/form';
 import { Input } from '@/src/components/ui/input';
 import { Textarea } from '@/src/components/ui/textarea';
-import { Checkbox } from '@/src/components/ui/checkbox';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import * as z from 'zod';
 
 import { useState } from 'react';
 import { DatePickerWithRange } from './ui/datepicker';
@@ -305,60 +305,61 @@ export default function AddEventForm() {
                 </FormItem>
               )}
             />
-
-            <FormField
-              control={form.control}
-              name="dateFrom"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Data wydarzenia</FormLabel>
-                  <FormControl>
-                    <DatePickerWithRange
-                      date={{
-                        from: field.value ? new Date(field.value) : undefined,
-                        to: form.getValues('dateTo')
-                          ? new Date(form.getValues('dateTo'))
-                          : undefined,
-                      }}
-                      onSelect={(range) => {
-                        if (range?.from) {
-                          field.onChange(
-                            range.from.toISOString().split('T')[0]
-                          );
-                          if (isOneDayEvent) {
-                            form.setValue(
-                              'dateTo',
+            <div className="flex items-center space-x-2 w-full">
+              <FormField
+                control={form.control}
+                name="dateFrom"
+                render={({ field }) => (
+                  <FormItem className="w-2/3">
+                    <FormLabel>Data wydarzenia</FormLabel>
+                    <FormControl>
+                      <DatePickerWithRange
+                        className="w-full"
+                        date={{
+                          from: field.value ? new Date(field.value) : undefined,
+                          to: form.getValues('dateTo')
+                            ? new Date(form.getValues('dateTo'))
+                            : undefined,
+                        }}
+                        onSelect={(range) => {
+                          if (range?.from) {
+                            field.onChange(
                               range.from.toISOString().split('T')[0]
                             );
-                          } else if (range.to) {
-                            form.setValue(
-                              'dateTo',
-                              range.to.toISOString().split('T')[0]
-                            );
+                            if (isOneDayEvent) {
+                              form.setValue(
+                                'dateTo',
+                                range.from.toISOString().split('T')[0]
+                              );
+                            } else if (range.to) {
+                              form.setValue(
+                                'dateTo',
+                                range.to.toISOString().split('T')[0]
+                              );
+                            }
                           }
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="time"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Czas</FormLabel>
-                  <FormControl>
-                    <Input type="time" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
+              <FormField
+                control={form.control}
+                name="time"
+                render={({ field }) => (
+                  <FormItem className="w-1/3">
+                    <FormLabel>Godzina rozpoczęcia</FormLabel>
+                    <FormControl>
+                      <Input type="time" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               control={form.control}
               name="capacity"
