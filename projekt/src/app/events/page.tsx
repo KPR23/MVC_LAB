@@ -15,6 +15,7 @@ import {
 import { Button } from '@/src/components/ui/button';
 import { Queries } from '@/src/server/db/queries';
 import { Plus, Ticket } from 'lucide-react';
+import Link from 'next/link';
 
 export default async function EventsPage() {
   const events = await Queries.getEvents();
@@ -30,32 +31,16 @@ export default async function EventsPage() {
             Odkryj i zakup bilety na nadchodzące wydarzenia
           </p>
         </div>
-        <div>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button className="gap-1">
-                <Plus />
-                Dodaj wydarzenie
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[800px] overflow-y-scroll max-h-[90vh]">
-              <DialogHeader>
-                <DialogTitle>Dodaj wydarzenie</DialogTitle>
-                <DialogDescription>
-                  Utwórz nowe wydarzenie uzupełniając wszystkie pola.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="">
-                <AddEventForm />
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
+        <Link href="/events/add">
+          <Button className="gap-1">
+            <Plus />
+            Dodaj wydarzenie
+          </Button>
+        </Link>
       </div>
       <div className="w-full max-w-screen-xl mx-auto mb-4">
         <EventFilter />
       </div>
-
       <div>
         <EventListPage events={events} />
       </div>

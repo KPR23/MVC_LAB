@@ -1,8 +1,10 @@
 'use client';
+
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -15,61 +17,119 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  MultiSelector,
-  MultiSelectorContent,
-  MultiSelectorInput,
-  MultiSelectorItem,
-  MultiSelectorList,
-  MultiSelectorTrigger,
-} from './ui/multi-select';
-import { DatetimePicker } from './ui/datetime-picker';
+import { Checkbox } from '@/components/ui/checkbox';
+import { DatePicker } from './ui/datepicker';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Tytuł jest wymagany'),
   artists: z.string().min(1, 'Artysta/Artyści są wymagani'),
   organizer: z.string().min(1, 'Organizator jest wymagany'),
-  description: z.string(),
+  description: z.string().min(1, 'Opis jest wymagany'),
   category: z
     .array(z.string())
     .nonempty('Proszę wybrać co najmniej jedną kategorię'),
   city: z.string().min(1, 'Miasto jest wymagane'),
-  location: z.string().min(1, 'Lokalizacja jest wymagana'),
-  'date-time': z.coerce.date(),
+  location: z.string().min(1, 'Nazwa obiektu jest wymagana'),
+  date: z.string().min(1, 'Data jest wymagana'),
+  time: z.string().min(1, 'Czas jest wymagany'),
   capacity: z.coerce.number().min(1, 'Pojemność musi być większa niż 0'),
-  name_6842191087: z.string().optional(), // Pole opcjonalne
-  price: z.coerce.number().min(0, 'Cena musi być większa lub równa 0'), // Cena może być 0
+  imageUrl: z.string().url('Niepoprawny adres URL'),
+  price: z.coerce.number().min(0, 'Cena musi być większa lub równa 0'),
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
+const eventCategories = [
+  { id: 'Muzyka', label: 'Muzyka' },
+  { id: 'Sport', label: 'Sport' },
+  { id: 'Sztuka', label: 'Sztuka' },
+  { id: 'Teatr', label: 'Teatr' },
+  { id: 'Inne', label: 'Inne' },
+] as const;
+
+type EventCategory = (typeof eventCategories)[number]['id'];
+
 export default function AddEventForm() {
-  const form = useForm<z.infer<typeof formSchema>>({
+  const router = useRouter();
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      category: [], // Ustawienie pustej tablicy domyślnie
-      'date-time': new Date(),
+      title: '',
+      artists: '',
+      organizer: '',
+      description: '',
+      category: [],
+      city: '',
+      location: '',
       capacity: 1,
+      imageUrl: '',
       price: 0,
+      date: '',
+      time: '',
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: FormValues) {
     try {
-      console.log(values);
-      toast(
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-        </pre>
-      );
+      const [year, month, day] = values.date.split('-').map(Number);
+      const [hours, minutes] = values.time.split(':').map(Number);
+
+      const eventDateObject = new Date(year, month - 1, day, hours, minutes);
+
+      if (isNaN(eventDateObject.getTime())) {
+        throw new Error('Invalid date or time provided.');
+      }
+
+      const combinedDateTimeString = eventDateObject.toISOString();
+
+      const eventInputData = {
+        title: values.title,
+        description: values.description,
+        artists: values.artists,
+        organizer: values.organizer,
+        category: values.category.join(', '),
+        city: values.city,
+        location: values.location,
+        imageUrl: values.imageUrl,
+        date: combinedDateTimeString,
+        time: values.time,
+        capacity: values.capacity,
+        availableSeats: values.capacity,
+        price: values.price,
+      };
+
+      console.log('Submitting event data:', eventInputData);
+
+      const response = await fetch('/api/events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(eventInputData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to add event');
+      }
+
+      toast.success('Wydarzenie dodane pomyślnie!');
+      form.reset();
+      router.refresh();
+      router.push('/events');
     } catch (error) {
       console.error('Form submission error', error);
-      toast.error('Failed to submit the form. Please try again.');
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Failed to submit the form. Please try again.'
+      );
     }
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        {/* Lewa Kolumna */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-4">
             <FormField
@@ -79,12 +139,8 @@ export default function AddEventForm() {
                 <FormItem>
                   <FormLabel>Tytuł wydarzenia</FormLabel>
                   <FormControl>
-                    <Input placeholder="Open’er Festival" {...field} />
+                    <Input placeholder="Open'er Festival" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    Pełna nazwa wydarzenia, która będzie widoczna dla
-                    wszystkich.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -99,9 +155,6 @@ export default function AddEventForm() {
                   <FormControl>
                     <Input placeholder="Linkin Park" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    Imię i nazwisko lub nazwa wykonawcy/wykonawców.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -138,7 +191,6 @@ export default function AddEventForm() {
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>Pełny opis wydarzenia.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -150,38 +202,47 @@ export default function AddEventForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Kategoria</FormLabel>
-                  <FormControl>
-                    <MultiSelector
-                      values={field.value}
-                      onValuesChange={field.onChange}
-                      loop
-                      className="max-w-xs"
-                    >
-                      <MultiSelectorTrigger>
-                        <MultiSelectorInput placeholder="Wybierz kategorie" />
-                      </MultiSelectorTrigger>
-                      <MultiSelectorContent>
-                        <MultiSelectorList>
-                          {/* Dodaj więcej opcji kategorii tutaj */}
-                          <MultiSelectorItem value={'Koncert'}>
-                            Koncert
-                          </MultiSelectorItem>
-                          <MultiSelectorItem value={'Wystawa'}>
-                            Wystawa
-                          </MultiSelectorItem>
-                          <MultiSelectorItem value={'Szkolenie'}>
-                            Szkolenie
-                          </MultiSelectorItem>
-                          <MultiSelectorItem value={'Sport'}>
-                            Sport
-                          </MultiSelectorItem>
-                          <MultiSelectorItem value={'Inne'}>
-                            Inne
-                          </MultiSelectorItem>
-                        </MultiSelectorList>
-                      </MultiSelectorContent>
-                    </MultiSelector>
-                  </FormControl>
+                  <div className="grid grid-cols-2 gap-2">
+                    {eventCategories.map((item) => (
+                      <FormField
+                        key={item.id}
+                        control={form.control}
+                        name="category"
+                        render={({ field: categoryField }) => {
+                          const checked = categoryField.value.includes(item.id);
+                          return (
+                            <FormItem
+                              key={item.id}
+                              className="flex flex-row items-start space-x-3 space-y-0"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={checked}
+                                  onCheckedChange={(isChecked) => {
+                                    if (isChecked) {
+                                      categoryField.onChange([
+                                        ...categoryField.value,
+                                        item.id,
+                                      ]);
+                                    } else {
+                                      categoryField.onChange(
+                                        categoryField.value?.filter(
+                                          (value) => value !== item.id
+                                        )
+                                      );
+                                    }
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                {item.label}
+                              </FormLabel>
+                            </FormItem>
+                          );
+                        }}
+                      />
+                    ))}
+                  </div>
                   <FormDescription>
                     Kategoria, do której należy wydarzenie.
                   </FormDescription>
@@ -191,7 +252,6 @@ export default function AddEventForm() {
             />
           </div>
 
-          {/* Prawa Kolumna */}
           <div className="space-y-4">
             <FormField
               control={form.control}
@@ -202,9 +262,6 @@ export default function AddEventForm() {
                   <FormControl>
                     <Input placeholder="Warszawa" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    Miasto, w którym odbędzie się wydarzenie.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -215,36 +272,52 @@ export default function AddEventForm() {
               name="location"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Lokalizacja</FormLabel>
+                  <FormLabel>Nazwa obiektu</FormLabel>
                   <FormControl>
                     <Input placeholder="Klub Progresja" {...field} />
                   </FormControl>
-                  <FormDescription>Pełna nazwa obiektu.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="date-time"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Data i godzina wydarzenia</FormLabel>
-                  <DatetimePicker
-                    {...field}
-                    format={[
-                      ['months', 'days', 'years'],
-                      ['hours', 'minutes', 'am/pm'],
-                    ]}
-                  />
-                  <FormDescription>
-                    Pełna data i godzina rozpoczęcia wydarzenia.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Data</FormLabel>
+                    <FormControl>
+                      <DatePicker
+                        value={field.value ? new Date(field.value) : undefined}
+                        onChange={(date) => {
+                          if (date) {
+                            field.onChange(date.toISOString().split('T')[0]);
+                          } else {
+                            field.onChange('');
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="time"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Czas</FormLabel>
+                    <FormControl>
+                      <Input type="time" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
@@ -259,12 +332,9 @@ export default function AddEventForm() {
                       {...field}
                       onChange={(e) =>
                         field.onChange(parseInt(e.target.value, 10))
-                      } // Konwersja na liczbę
+                      }
                     />
                   </FormControl>
-                  <FormDescription>
-                    Całkowita pojemność miejsca wydarzenia.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -272,10 +342,10 @@ export default function AddEventForm() {
 
             <FormField
               control={form.control}
-              name="name_6842191087"
+              name="imageUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Adres URL okładki</FormLabel>
+                  <FormLabel>Adres URL plakatu</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder=""
@@ -284,7 +354,7 @@ export default function AddEventForm() {
                     />
                   </FormControl>
                   <FormDescription>
-                    Link do zdjęcia promującego wydarzenie.
+                    Link do plakatu promującego wydarzenie.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -296,20 +366,22 @@ export default function AddEventForm() {
               name="price"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cena w groszach</FormLabel>
+                  <FormLabel>Cena biletu</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="19499 (194,99 zł)"
+                      placeholder="194.99"
                       type="number"
+                      step="0.01"
                       {...field}
-                      onChange={(e) =>
-                        field.onChange(parseInt(e.target.value, 10))
-                      } // Konwersja na liczbę
+                      value={isNaN(field.value) ? '' : field.value}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        field.onChange(
+                          value === '' ? undefined : parseFloat(value)
+                        );
+                      }}
                     />
                   </FormControl>
-                  <FormDescription>
-                    Koszt biletu lub uczestnictwa w wydarzeniu.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

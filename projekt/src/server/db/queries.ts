@@ -30,17 +30,28 @@ export const Mutations = {
       city: string;
       location: string;
       imageUrl: string;
-      date: Date;
+      date: string;
       time: string;
       capacity: number;
       availableSeats: number;
       price: number;
     };
   }) {
-    return await db.insert(events).values({
-      ...input.event,
-      date: new Date(input.event.date).toISOString(),
-      time: input.event.time,
-    });
+    // The date is already in YYYY-MM-DD format from the frontend
+    const dateOnlyString = input.event.date;
+
+    try {
+      console.log('Attempting database insertion...');
+      const result = await db.insert(events).values({
+        ...input.event,
+        date: dateOnlyString,
+        time: input.event.time,
+      });
+      console.log('Database insertion successful:', result);
+      return result;
+    } catch (dbError) {
+      console.error('Database insertion error:', dbError);
+      throw new Error('Failed to save event to the database.');
+    }
   },
 };
