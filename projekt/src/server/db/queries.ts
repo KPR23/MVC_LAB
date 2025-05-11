@@ -30,21 +30,20 @@ export const Mutations = {
       city: string;
       location: string;
       imageUrl: string;
-      date: string;
+      dateTo: string;
+      dateFrom: string;
       time: string;
       capacity: number;
       availableSeats: number;
       price: number;
     };
   }) {
-    // The date is already in YYYY-MM-DD format from the frontend
-    const dateOnlyString = input.event.date;
-
     try {
       console.log('Attempting database insertion...');
       const result = await db.insert(events).values({
         ...input.event,
-        date: dateOnlyString,
+        dateFrom: input.event.dateFrom,
+        dateTo: input.event.dateTo,
         time: input.event.time,
       });
       console.log('Database insertion successful:', result);

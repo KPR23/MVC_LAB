@@ -14,12 +14,6 @@ export default function AddEventPage() {
             biletów.
           </p>
         </div>
-        {/* <Link href="/events/add">
-          <Button className="gap-1">
-            <Plus />
-            Dodaj wydarzenie
-          </Button>
-        </Link> */}
       </div>
       <div className="px-80">
         <AddEventForm />

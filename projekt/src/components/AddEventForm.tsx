@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/src/components/ui/button';
 import {
   Form,
   FormControl,
@@ -14,11 +14,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { DatePicker } from './ui/datepicker';
+} from '@/src/components/ui/form';
+import { Input } from '@/src/components/ui/input';
+import { Textarea } from '@/src/components/ui/textarea';
+import { Checkbox } from '@/src/components/ui/checkbox';
+
+import { useState } from 'react';
+import { DatePickerWithRange } from './ui/datepicker';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Tytuł jest wymagany'),
@@ -30,7 +32,8 @@ const formSchema = z.object({
     .nonempty('Proszę wybrać co najmniej jedną kategorię'),
   city: z.string().min(1, 'Miasto jest wymagane'),
   location: z.string().min(1, 'Nazwa obiektu jest wymagana'),
-  date: z.string().min(1, 'Data jest wymagana'),
+  dateFrom: z.string().min(1, 'Data jest wymagana'),
+  dateTo: z.string().min(1, 'Data jest wymagana'),
   time: z.string().min(1, 'Czas jest wymagany'),
   capacity: z.coerce.number().min(1, 'Pojemność musi być większa niż 0'),
   imageUrl: z.string().url('Niepoprawny adres URL'),
@@ -64,23 +67,44 @@ export default function AddEventForm() {
       capacity: 1,
       imageUrl: '',
       price: 0,
-      date: '',
+      dateFrom: '',
+      dateTo: '',
       time: '',
     },
   });
 
+  const [isOneDayEvent, setIsOneDayEvent] = useState(false);
+
   async function onSubmit(values: FormValues) {
     try {
-      const [year, month, day] = values.date.split('-').map(Number);
+      const [year, month, day] = values.dateFrom.split('-').map(Number);
+      const [yearTo, monthTo, dayTo] = values.dateTo.split('-').map(Number);
       const [hours, minutes] = values.time.split(':').map(Number);
 
-      const eventDateObject = new Date(year, month - 1, day, hours, minutes);
+      const eventDateFromObject = new Date(
+        year,
+        month - 1,
+        day,
+        hours,
+        minutes
+      );
+      const eventDateToObject = new Date(
+        yearTo,
+        monthTo - 1,
+        dayTo,
+        hours,
+        minutes
+      );
 
-      if (isNaN(eventDateObject.getTime())) {
+      if (
+        isNaN(eventDateFromObject.getTime()) ||
+        isNaN(eventDateToObject.getTime())
+      ) {
         throw new Error('Invalid date or time provided.');
       }
 
-      const combinedDateTimeString = eventDateObject.toISOString();
+      const dateOnlyString = eventDateFromObject.toISOString().split('T')[0];
+      const dateOnlyStringTo = eventDateToObject.toISOString().split('T')[0];
 
       const eventInputData = {
         title: values.title,
@@ -91,7 +115,8 @@ export default function AddEventForm() {
         city: values.city,
         location: values.location,
         imageUrl: values.imageUrl,
-        date: combinedDateTimeString,
+        dateFrom: dateOnlyString,
+        dateTo: dateOnlyStringTo,
         time: values.time,
         capacity: values.capacity,
         availableSeats: values.capacity,
@@ -281,43 +306,58 @@ export default function AddEventForm() {
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Data</FormLabel>
-                    <FormControl>
-                      <DatePicker
-                        value={field.value ? new Date(field.value) : undefined}
-                        onChange={(date) => {
-                          if (date) {
-                            field.onChange(date.toISOString().split('T')[0]);
-                          } else {
-                            field.onChange('');
+            <FormField
+              control={form.control}
+              name="dateFrom"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Data wydarzenia</FormLabel>
+                  <FormControl>
+                    <DatePickerWithRange
+                      date={{
+                        from: field.value ? new Date(field.value) : undefined,
+                        to: form.getValues('dateTo')
+                          ? new Date(form.getValues('dateTo'))
+                          : undefined,
+                      }}
+                      onSelect={(range) => {
+                        if (range?.from) {
+                          field.onChange(
+                            range.from.toISOString().split('T')[0]
+                          );
+                          if (isOneDayEvent) {
+                            form.setValue(
+                              'dateTo',
+                              range.from.toISOString().split('T')[0]
+                            );
+                          } else if (range.to) {
+                            form.setValue(
+                              'dateTo',
+                              range.to.toISOString().split('T')[0]
+                            );
                           }
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="time"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Czas</FormLabel>
-                    <FormControl>
-                      <Input type="time" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="time"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Czas</FormLabel>
+                  <FormControl>
+                    <Input type="time" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}

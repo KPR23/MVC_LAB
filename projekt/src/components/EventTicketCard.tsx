@@ -4,7 +4,24 @@ import { Card } from './ui/card';
 import { Button } from './ui/button';
 
 export default function EventTicketCard(event: DB_EventType) {
-  const date = new Date(event.date);
+  function capitalizeFirstLetter(word: string) {
+    if (!word) return '';
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  }
+
+  const dateFrom = new Date(event.dateFrom);
+  const dateTo = new Date(event.dateTo);
+  const date = dateFrom < dateTo ? dateFrom : dateTo;
+  const formattedDateFrom = date.toLocaleDateString('pl-PL', {
+    day: '2-digit',
+    month: 'short',
+  });
+  const formattedDateTo = dateTo.toLocaleDateString('pl-PL', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+
   const formattedDate = date.toLocaleDateString('pl-PL', {
     day: '2-digit',
     month: 'long',
@@ -12,6 +29,7 @@ export default function EventTicketCard(event: DB_EventType) {
   });
   const dayName = date.toLocaleDateString('pl-PL', { weekday: 'long' });
   const priceInPLN = event.price / 100;
+  const displayDayName = capitalizeFirstLetter(dayName);
 
   return (
     <Card className="relative w-full bg-card rounded-lg shadow-sm overflow-hidden px-4">
@@ -22,7 +40,9 @@ export default function EventTicketCard(event: DB_EventType) {
           <div className="p-6 md:w-1/6 md:border-r border-dashed border-muted">
             <div className="text-muted-foreground">{dayName}</div>
             <div className="text-xl font-bold text-foreground">
-              {formattedDate}
+              {event.dateFrom === event.dateTo
+                ? formattedDate
+                : `${formattedDateFrom} - ${formattedDateTo}`}
             </div>
             <div className="text-muted-foreground">
               {event.time.slice(0, 5)}

@@ -13,7 +13,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
+} from '@/src/components/ui/breadcrumb';
 
 export default async function EventPage(props: {
   params: Promise<{ category: string; title: string }>;
@@ -21,19 +21,45 @@ export default async function EventPage(props: {
   const params = await props.params;
   const events = await Queries.getEvents();
 
-  const decodedCategory = decodeURIComponent(params.category);
-  const decodedTitle = decodeURIComponent(params.title);
+  const category = decodeURIComponent(params.category);
+  const title = decodeURIComponent(params.title);
 
   const event = events.find(
     (e) =>
-      e.category.toLowerCase().replace(/[^a-z0-9]+/g, '-') ===
-        decodedCategory &&
-      e.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === decodedTitle
+      e.category.toLowerCase().replace(/[^a-z0-9]+/g, '-') === category &&
+      e.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === title
   );
 
   if (!event) {
     notFound();
   }
+
+  const dateFrom = new Date(event.dateFrom);
+  const dateTo = new Date(event.dateTo);
+
+  const formattedDateFrom = dateFrom.toLocaleDateString('pl-PL', {
+    day: '2-digit',
+    month: 'short',
+  });
+  const formattedDateTo = dateTo.toLocaleDateString('pl-PL', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+  const formattedDateFromWithYear = dateFrom.toLocaleDateString('pl-PL', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+  const daysDifference = Math.ceil(
+    (dateTo.getTime() - dateFrom.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  const eventDates = Array.from({ length: daysDifference + 1 }, (_, i) => {
+    const currentDate = new Date(dateFrom);
+    currentDate.setDate(dateFrom.getDate() + i);
+    return currentDate;
+  });
 
   return (
     <div className="mx-64 px-10 py-6">
@@ -66,7 +92,11 @@ export default async function EventPage(props: {
         <Badge className="rounded-full">{event.category}</Badge>
         <div className="flex items-center gap-2 text-muted-foreground">
           <Calendar className="w-5 h-5" />
-          <span>{event.date}</span>
+          <span>
+            {event.dateFrom === event.dateTo
+              ? `${formattedDateFromWithYear}`
+              : `${formattedDateFrom} - ${formattedDateTo}`}
+          </span>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
           <MapPin className="w-5 h-5" />
@@ -118,9 +148,46 @@ export default async function EventPage(props: {
               <h2 className="text-3xl font-bold">Bilety</h2>
             </div>
 
-            <h3 className="text-2xl font-bold mb-6">{event.city}</h3>
+            <h3 className="text-2xl font-bold mb-6">Karnety</h3>
 
-            <EventTicketCard {...event} />
+            {event.dateFrom !== event.dateTo ? (
+              <>
+                <div className="mb-8">
+                  <EventTicketCard
+                    {...event}
+                    dateFrom={event.dateFrom}
+                    dateTo={event.dateTo}
+                    title={`${event.title} - Karnet na wszystkie dni`}
+                    price={Math.round(event.price * daysDifference * 0.8)}
+                    availableSeats={Math.min(
+                      ...eventDates.map(() => event.availableSeats)
+                    )}
+                  />
+                </div>
+                <div className="space-y-6">
+                  <h3 className="text-2xl font-bold mb-6">
+                    Bilety jednodniowe
+                  </h3>
+                  {eventDates.map((date) => {
+                    const dayName = date.toLocaleDateString('pl-PL', {
+                      weekday: 'long',
+                    });
+                    return (
+                      <div className="mb-6" key={date.toISOString()}>
+                        <EventTicketCard
+                          {...event}
+                          dateFrom={date.toISOString()}
+                          dateTo={date.toISOString()}
+                          title={`${event.title} - ${dayName}`}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <EventTicketCard {...event} />
+            )}
           </section>
 
           <section id="event-info">
@@ -133,7 +200,13 @@ export default async function EventPage(props: {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-3xl font-bold">Artyści</h2>
             </div>
-            <h3 className="text-lg mb-6">{event.artists}</h3>
+            <h3 className="text-lg mb-6">
+              {event.artists.length > 1
+                ? event.artists
+                    .split(',')
+                    .map((artist) => <span key={artist}>{artist}</span>)
+                : event.artists}
+            </h3>
           </section>
           <section id="location">
             <div className="flex justify-between items-center mb-6">

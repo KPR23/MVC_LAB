@@ -1,6 +1,6 @@
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@/src/components/ui/skeleton';
 import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/src/components/ui/button';
 import { EventCardSkeleton } from '..';
 
 export default function EventsSkeleton() {

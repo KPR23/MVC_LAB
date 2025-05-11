@@ -1,4 +1,4 @@
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@/src/components/ui/skeleton';
 import { Card, CardContent } from '../ui/card';
 
 export default function EventCardSkeleton() {

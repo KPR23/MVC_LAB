@@ -22,8 +22,19 @@ export default function EventCard({ event }: EventCardProps) {
       .replace(/(^-|-$)/g, '');
   }
 
-  const date = new Date(event.date);
-  const formattedDate = date.toLocaleDateString('pl-PL', {
+  const dateFrom = new Date(event.dateFrom);
+  const dateTo = new Date(event.dateTo);
+  const date = dateFrom < dateTo ? dateFrom : dateTo;
+  const formattedDateFrom = date.toLocaleDateString('pl-PL', {
+    day: '2-digit',
+    month: 'short',
+  });
+  const formattedDateTo = dateTo.toLocaleDateString('pl-PL', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+  const formattedDateFromWithYear = dateFrom.toLocaleDateString('pl-PL', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -38,7 +49,7 @@ export default function EventCard({ event }: EventCardProps) {
 
   return (
     <Link href={`/events/${eventSlug}`}>
-      <Card className="overflow-hidden hover-scale h-full pb-6">
+      <Card className="overflow-hidden hover:scale-105 transition-all h-full pb-6">
         <div className="relative overflow-hidden aspect-[3/4] ">
           <Image
             src={event.imageUrl}
@@ -62,7 +73,9 @@ export default function EventCard({ event }: EventCardProps) {
           <div className="flex items-center gap-2 text-muted-foreground mb-2">
             <Calendar size={16} />
             <span className="text-sm">
-              {displayDayName}, {formattedDate}
+              {event.dateFrom === event.dateTo
+                ? `${displayDayName}, ${formattedDateFromWithYear}`
+                : `${formattedDateFrom} - ${formattedDateTo}`}
             </span>
           </div>
 
