@@ -1,11 +1,11 @@
 import { EventFilter, EventListPage } from '@/src/components';
 import { Button } from '@/src/components/ui/button';
-import { Queries } from '@/src/server/db/queries';
+import { EventController } from '@/src/controllers/EventController';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function EventsPage() {
-  const events = await Queries.getEvents();
+  const events = await EventController.listEvents();
 
   return (
     <div className="flex flex-col items-center justify-center w-full">
