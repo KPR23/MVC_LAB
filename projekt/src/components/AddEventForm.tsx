@@ -19,7 +19,6 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
-import { useState } from 'react';
 import { DatePickerWithRange } from './ui/datepicker';
 
 const formSchema = z.object({
@@ -50,8 +49,6 @@ const eventCategories = [
   { id: 'Inne', label: 'Inne' },
 ] as const;
 
-type EventCategory = (typeof eventCategories)[number]['id'];
-
 export default function AddEventForm() {
   const router = useRouter();
   const form = useForm<FormValues>({
@@ -72,8 +69,6 @@ export default function AddEventForm() {
       time: '',
     },
   });
-
-  const [isOneDayEvent, setIsOneDayEvent] = useState(false);
 
   async function onSubmit(values: FormValues) {
     try {
@@ -326,17 +321,6 @@ export default function AddEventForm() {
                             field.onChange(
                               range.from.toISOString().split('T')[0]
                             );
-                            if (isOneDayEvent) {
-                              form.setValue(
-                                'dateTo',
-                                range.from.toISOString().split('T')[0]
-                              );
-                            } else if (range.to) {
-                              form.setValue(
-                                'dateTo',
-                                range.to.toISOString().split('T')[0]
-                              );
-                            }
                           }
                         }}
                       />

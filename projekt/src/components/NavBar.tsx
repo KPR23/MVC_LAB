@@ -19,7 +19,7 @@ export default function NavBar() {
   ];
 
   return (
-    <div className="flex items-center gap-6 md:gap-10 py-6 px-80 border-b border-muted">
+    <div className="flex items-center gap-6 md:gap-10 py-6 xl:px-50 2xl:px-80 md:px-60 sm:px-40 border-b border-muted">
       <Link href="/" className="flex items-center gap-2">
         <Ticket className="size-6" />
         <span className="text-xl font-semibold">Eventix</span>

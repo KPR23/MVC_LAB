@@ -7,7 +7,7 @@ import EventCard from './EventCard';
 export default function EventListPage(props: { events: DB_EventType[] }) {
   const events = props.events;
   return (
-    <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 py-4 max-w-screen-xl mx-auto">
+    <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-6 py-4 max-w-screen-xl mx-auto">
       {events.length > 0 ? (
         events.map((event: DB_EventType) => (
           <div key={event.id} className="w-full max-w-[290px] flex-shrink-0">

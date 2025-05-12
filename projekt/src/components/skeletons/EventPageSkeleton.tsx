@@ -8,7 +8,7 @@ import {
 
 export default function EventPageSkeleton() {
   return (
-    <div className="mx-64 px-10 py-6">
+    <div className="xl:px-50 2xl:px-80 py-6">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>

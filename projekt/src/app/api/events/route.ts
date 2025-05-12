@@ -27,6 +27,7 @@ export async function POST(NextRequest: Request) {
 
     return new Response(JSON.stringify(event), { status: 201 });
   } catch (error) {
+    console.error('Error creating event:', error);
     return new Response('Internal Server Error', { status: 500 });
   }
 }

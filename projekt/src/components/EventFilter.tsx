@@ -12,6 +12,7 @@ import {
 import { Search, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from './ui/card';
+import { DatePickerWithRange } from './ui/datepicker';
 
 interface EventFilterProps {
   onFilter: (filters: {
@@ -23,7 +24,6 @@ interface EventFilterProps {
 }
 
 export default function EventFilter() {
-  // { onFilter }: EventFilterProps
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
   const [date, setDate] = useState('');
@@ -73,7 +73,7 @@ export default function EventFilter() {
           <div className="flex gap-4">
             <Select value={category} onValueChange={setCategory}>
               <SelectTrigger id="category">
-                <SelectValue placeholder="All categories" />
+                <SelectValue placeholder="Wszystkie kategorie" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Wszystkie kategorie</SelectItem>
@@ -84,12 +84,7 @@ export default function EventFilter() {
                 ))}
               </SelectContent>
             </Select>
-            <Input
-              id="date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
+            <DatePickerWithRange />
           </div>
         </div>
 

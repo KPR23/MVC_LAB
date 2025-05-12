@@ -9,8 +9,8 @@ export default async function EventsPage() {
 
   return (
     <div className="flex flex-col items-center justify-center w-full">
-      <div className="flex justify-between items-center bg-card py-8 px-80 mb-8 w-full">
-        <div className="space-y-2">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center bg-card py-6 xl:px-50 2xl:px-80 mb-8 w-full">
+        <div className="space-y-2 mb-4 md:mb-0">
           <h1 className="text-3xl font-bold">
             Przeglądaj <span className="text-primary">wydarzenia.</span>
           </h1>
@@ -19,16 +19,16 @@ export default async function EventsPage() {
           </p>
         </div>
         <Link href="/events/add">
-          <Button className="gap-1">
+          <Button className="gap-1 w-full md:w-auto">
             <Plus />
             Dodaj wydarzenie
           </Button>
         </Link>
       </div>
-      <div className="w-full max-w-screen-xl mx-auto mb-4">
+      <div className="w-full xl:px-50 2xl:px-80 mb-4">
         <EventFilter />
       </div>
-      <div>
+      <div className="w-full xl:px-50 2xl:px-80">
         <EventListPage events={events} />
       </div>
     </div>
