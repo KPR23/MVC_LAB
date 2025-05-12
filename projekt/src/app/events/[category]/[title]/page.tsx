@@ -9,7 +9,8 @@ import {
   BreadcrumbSeparator,
 } from '@/src/components/ui/breadcrumb';
 import { Button } from '@/src/components/ui/button';
-import { Queries } from '@/src/server/db/queries';
+import { EventController } from '@/src/controllers/EventController';
+import { getEventDateInfo } from '@/src/utils/eventUtils';
 import { Calendar, MapPin, Ticket } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -18,48 +19,23 @@ import { notFound } from 'next/navigation';
 export default async function EventPage(props: {
   params: Promise<{ category: string; title: string }>;
 }) {
-  const params = await props.params;
-  const events = await Queries.getEvents();
-
-  const category = decodeURIComponent(params.category);
-  const title = decodeURIComponent(params.title);
-
-  const event = events.find(
-    (e) =>
-      e.category.toLowerCase().replace(/[^a-z0-9]+/g, '-') === category &&
-      e.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === title
+  const { category, title } = await props.params;
+  const event = await EventController.getEvent(
+    decodeURIComponent(category),
+    decodeURIComponent(title)
   );
 
   if (!event) {
     notFound();
   }
 
-  const dateFrom = new Date(event.dateFrom);
-  const dateTo = new Date(event.dateTo);
-
-  const formattedDateFrom = dateFrom.toLocaleDateString('pl-PL', {
-    day: '2-digit',
-    month: 'short',
-  });
-  const formattedDateTo = dateTo.toLocaleDateString('pl-PL', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-  const formattedDateFromWithYear = dateFrom.toLocaleDateString('pl-PL', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-  const daysDifference = Math.ceil(
-    (dateTo.getTime() - dateFrom.getTime()) / (1000 * 60 * 60 * 24)
-  );
-
-  const eventDates = Array.from({ length: daysDifference + 1 }, (_, i) => {
-    const currentDate = new Date(dateFrom);
-    currentDate.setDate(dateFrom.getDate() + i);
-    return currentDate;
-  });
+  const {
+    formattedDateFrom,
+    formattedDateTo,
+    formattedDateFromWithYear,
+    daysDifference,
+    eventDates,
+  } = getEventDateInfo(event);
 
   return (
     <div className="xl:px-50 2xl:px-80 py-6">
@@ -94,7 +70,7 @@ export default async function EventPage(props: {
           <Calendar className="w-5 h-5" />
           <span>
             {event.dateFrom === event.dateTo
-              ? `${formattedDateFromWithYear}`
+              ? formattedDateFromWithYear
               : `${formattedDateFrom} - ${formattedDateTo}`}
           </span>
         </div>

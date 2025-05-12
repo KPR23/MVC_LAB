@@ -30,8 +30,8 @@ export const Mutations = {
       city: string;
       location: string;
       imageUrl: string;
-      dateTo: string;
       dateFrom: string;
+      dateTo: string;
       time: string;
       capacity: number;
       availableSeats: number;

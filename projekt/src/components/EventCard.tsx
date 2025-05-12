@@ -1,6 +1,11 @@
 import { Calendar, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import {
+  capitalizeFirstLetter,
+  createSlug,
+  getEventDateInfo,
+} from '../utils/eventUtils';
 import { DB_EventType } from '../server/db/schema';
 import { Badge } from './ui/badge';
 import { Card, CardContent } from './ui/card';
@@ -10,40 +15,12 @@ interface EventCardProps {
 }
 
 export default function EventCard({ event }: EventCardProps) {
-  function capitalizeFirstLetter(word: string) {
-    if (!word) return '';
-    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-  }
-
-  function createSlug(text: string) {
-    return text
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-  }
-
-  const dateFrom = new Date(event.dateFrom);
-  const dateTo = new Date(event.dateTo);
-  const date = dateFrom < dateTo ? dateFrom : dateTo;
-  const formattedDateFrom = date.toLocaleDateString('pl-PL', {
-    day: '2-digit',
-    month: 'short',
-  });
-  const formattedDateTo = dateTo.toLocaleDateString('pl-PL', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-  const formattedDateFromWithYear = dateFrom.toLocaleDateString('pl-PL', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-  let dayName = date.toLocaleDateString('pl-PL', { weekday: 'short' });
-  if (dayName.endsWith('.')) {
-    dayName = dayName.slice(0, -1);
-  }
-  const displayDayName = capitalizeFirstLetter(dayName);
+  const {
+    formattedDateFrom,
+    formattedDateTo,
+    formattedDateFromWithYear,
+    displayDayName,
+  } = getEventDateInfo(event);
 
   const eventSlug = `${createSlug(event.category)}/${createSlug(event.title)}`;
 
