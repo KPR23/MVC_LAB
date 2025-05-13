@@ -1,45 +1,67 @@
-export function getEventDateInfo(event: { dateFrom: string; dateTo: string }) {
+export function getEventDateInfo(event: {
+  dateFrom: string;
+  dateTo: string;
+  price: number;
+}) {
   const dateFrom = new Date(event.dateFrom);
   const dateTo = new Date(event.dateTo);
-  let dayName = dateFrom.toLocaleDateString('pl-PL', { weekday: 'short' });
-  if (dayName.endsWith('.')) {
-    dayName = dayName.slice(0, -1);
+
+  const shortMonthWithoutYear = dateFrom.toLocaleDateString('pl-PL', {
+    day: '2-digit',
+    month: 'short',
+  });
+
+  const shortMonthWithYear = dateTo.toLocaleDateString('pl-PL', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+
+  const fullMonthWithoutYear = dateFrom.toLocaleDateString('pl-PL', {
+    day: '2-digit',
+    month: 'long',
+  });
+
+  const fullMonthWithYear = dateTo.toLocaleDateString('pl-PL', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
+
+  let shortDayName = dateFrom.toLocaleDateString('pl-PL', { weekday: 'short' });
+  let fullDayName = dateFrom.toLocaleDateString('pl-PL', { weekday: 'long' });
+
+  if (shortDayName.endsWith('.')) {
+    shortDayName = shortDayName.slice(0, -1);
   }
-  const formattedDateFrom = dateFrom.toLocaleDateString('pl-PL', {
-    day: '2-digit',
-    month: 'short',
-  });
-  const formattedDateTo = dateTo.toLocaleDateString('pl-PL', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-  const formattedDateFromWithYear = dateFrom.toLocaleDateString('pl-PL', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
+
   const daysDifference = Math.ceil(
     (dateTo.getTime() - dateFrom.getTime()) / (1000 * 60 * 60 * 24)
   );
 
-  const displayDayName = capitalizeFirstLetter(dayName);
+  const capitalizedShortDayName = capitalizeFirstLetter(shortDayName);
+
   const eventDates = Array.from({ length: daysDifference + 1 }, (_, i) => {
     const currentDate = new Date(dateFrom);
     currentDate.setDate(dateFrom.getDate() + i);
     return currentDate;
   });
 
+  const priceInPLN = event.price / 100;
+
   return {
     dateFrom,
     dateTo,
-    dayName,
-    displayDayName,
-    formattedDateFrom,
-    formattedDateTo,
-    formattedDateFromWithYear,
+    shortMonthWithoutYear,
+    shortMonthWithYear,
+    fullMonthWithYear,
+    fullMonthWithoutYear,
+    shortDayName,
+    fullDayName,
+    capitalizedShortDayName,
     daysDifference,
     eventDates,
+    priceInPLN,
   };
 }
 

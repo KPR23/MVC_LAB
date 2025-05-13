@@ -1,12 +1,8 @@
 import { Calendar, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import {
-  capitalizeFirstLetter,
-  createSlug,
-  getEventDateInfo,
-} from '../utils/eventUtils';
 import { DB_EventType } from '../server/db/schema';
+import { createSlug, getEventDateInfo } from '../utils/eventUtils';
 import { Badge } from './ui/badge';
 import { Card, CardContent } from './ui/card';
 
@@ -16,10 +12,10 @@ interface EventCardProps {
 
 export default function EventCard({ event }: EventCardProps) {
   const {
-    formattedDateFrom,
-    formattedDateTo,
-    formattedDateFromWithYear,
-    displayDayName,
+    shortMonthWithoutYear,
+    shortMonthWithYear,
+    fullMonthWithYear,
+    capitalizedShortDayName,
   } = getEventDateInfo(event);
 
   const eventSlug = `${createSlug(event.category)}/${createSlug(event.title)}`;
@@ -36,9 +32,6 @@ export default function EventCard({ event }: EventCardProps) {
           />
           <div className="absolute top-3 right-3 flex">
             <Badge className="rounded-full">{event.category}</Badge>
-            <Badge className="rounded-full ml-2">
-              {capitalizeFirstLetter(event.city)}
-            </Badge>
           </div>
         </div>
 
@@ -51,8 +44,8 @@ export default function EventCard({ event }: EventCardProps) {
             <Calendar size={16} />
             <span className="text-sm">
               {event.dateFrom === event.dateTo
-                ? `${displayDayName}, ${formattedDateFromWithYear}`
-                : `${formattedDateFrom} - ${formattedDateTo}`}
+                ? `${capitalizedShortDayName}, ${fullMonthWithYear}`
+                : `${shortMonthWithoutYear} - ${shortMonthWithYear}`}
             </span>
           </div>
 

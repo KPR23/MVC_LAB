@@ -10,7 +10,11 @@ export default function NavBar() {
 
   const routes = [
     { href: '/', label: 'Strona główna', active: pathname === '/' },
-    { href: '/events', label: 'Wydarzenia', active: pathname === '/events' },
+    {
+      href: '/events',
+      label: 'Wydarzenia',
+      active: pathname === '/events' || pathname.startsWith('/events/'),
+    },
     {
       href: '/bookings',
       label: 'Moje bilety',
@@ -19,9 +23,9 @@ export default function NavBar() {
   ];
 
   return (
-    <div className="flex items-center gap-6 md:gap-10 py-6 xl:px-50 2xl:px-80 md:px-60 sm:px-40 border-b border-muted">
+    <div className="flex items-center gap-6 md:gap-10 py-6 xl:px-60 2xl:px-80 md:px-50 sm:px-40 border-b border-muted">
       <Link href="/" className="flex items-center gap-2">
-        <Ticket className="size-6" />
+        <Ticket className="size-6 text-primary" />
         <span className="text-xl font-semibold">Eventix</span>
       </Link>
 

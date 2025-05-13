@@ -30,11 +30,10 @@ export default async function EventPage(props: {
   }
 
   const {
-    formattedDateFrom,
-    formattedDateTo,
-    formattedDateFromWithYear,
     daysDifference,
     eventDates,
+    fullMonthWithoutYear,
+    fullMonthWithYear,
   } = getEventDateInfo(event);
 
   return (
@@ -70,8 +69,8 @@ export default async function EventPage(props: {
           <Calendar className="w-5 h-5" />
           <span>
             {event.dateFrom === event.dateTo
-              ? formattedDateFromWithYear
-              : `${formattedDateFrom} - ${formattedDateTo}`}
+              ? fullMonthWithYear
+              : `${fullMonthWithoutYear} - ${fullMonthWithYear}`}
           </span>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
@@ -81,7 +80,7 @@ export default async function EventPage(props: {
       </div>
 
       <div className="lg:flex gap-x-12 mb-12">
-        <div className="w-80 shrink-0 space-y-6">
+        <div className="w-80 shrink-0 space-y-6 lg:sticky lg:top-6 self-start">
           <div className="relative aspect-[3/4] w-full">
             <Image
               src={event.imageUrl}
