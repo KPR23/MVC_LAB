@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/src/utils/utils';
-import { Ticket } from 'lucide-react';
+import { TicketCheck } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -25,7 +25,7 @@ export default function NavBar() {
   return (
     <div className="flex items-center gap-6 md:gap-10 py-6 xl:px-60 2xl:px-80 md:px-50 sm:px-40 border-b border-muted">
       <Link href="/" className="flex items-center gap-2">
-        <Ticket className="size-6 text-primary" />
+        <TicketCheck className="size-6 text-primary" />
         <span className="text-xl font-semibold">Eventix</span>
       </Link>
 

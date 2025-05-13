@@ -66,7 +66,7 @@ export default async function EventPage(props: {
       <div className="flex flex-wrap gap-4 mb-8">
         <Badge className="rounded-full">{event.category}</Badge>
         <div className="flex items-center gap-2 text-muted-foreground">
-          <Calendar className="w-5 h-5" />
+          <Calendar className="w-5 h-5 text-primary" />
           <span>
             {event.dateFrom === event.dateTo
               ? fullMonthWithYear
@@ -74,7 +74,7 @@ export default async function EventPage(props: {
           </span>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
-          <MapPin className="w-5 h-5" />
+          <MapPin className="w-5 h-5 text-primary" />
           <span>{event.city}</span>
         </div>
       </div>

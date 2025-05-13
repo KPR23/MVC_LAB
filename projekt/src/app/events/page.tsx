@@ -1,34 +1,21 @@
-import { EventFilter, EventListPage } from '@/src/components';
-import { Button } from '@/src/components/ui/button';
+import { EventFilter, EventListPage, TitleBox } from '@/src/components';
 import { EventController } from '@/src/controllers/EventController';
-import { Plus } from 'lucide-react';
-import Link from 'next/link';
 
 export default async function EventsPage() {
   const events = await EventController.listEvents();
 
   return (
     <div className="flex flex-col items-center justify-center w-full">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center bg-card py-6 xl:px-50 2xl:px-80 mb-8 w-full">
-        <div className="space-y-2 mb-4 md:mb-0">
-          <h1 className="text-3xl font-bold">
-            Przeglądaj <span className="text-primary">wydarzenia.</span>
-          </h1>
-          <p className="text-muted-foreground">
-            Odkryj i zakup bilety na nadchodzące wydarzenia
-          </p>
-        </div>
-        <Link href="/events/add">
-          <Button className="gap-1 w-full md:w-auto">
-            <Plus />
-            Dodaj wydarzenie
-          </Button>
-        </Link>
-      </div>
-      <div className="w-full xl:px-50 2xl:px-80 mb-4">
+      <TitleBox
+        action="Przeglądaj"
+        featuredTitle="wydarzenia"
+        description="Odkryj i zakup bilety na nadchodzące wydarzenia"
+        button={true}
+      />
+      <div className="w-full xl:px-60 2xl:px-80 mb-4">
         <EventFilter />
       </div>
-      <div className="w-full xl:px-50 2xl:px-80">
+      <div className="w-full xl:px-60 2xl:px-80">
         <EventListPage events={events} />
       </div>
     </div>

@@ -21,7 +21,7 @@ export default function EventTicketCard(event: DB_EventType) {
         <div className="flex flex-col items-stretch md:flex-row">
           <div className="md:py-6 px-6 md:w-1/6 relative flex flex-col justify-center">
             <div className="text-muted-foreground">{fullDayName}</div>
-            <div className="text-xl/6 font-bold text-foreground">
+            <div className="text-xl font-bold text-foreground">
               {event.dateFrom === event.dateTo
                 ? fullMonthWithYear
                 : `${shortMonthWithoutYear} - ${shortMonthWithYear}`}
@@ -45,7 +45,7 @@ export default function EventTicketCard(event: DB_EventType) {
 
           <div className="py-6 px-6 md:w-2/6 flex flex-col items-center justify-center bg-card">
             <Button className="bg-primary transition-colors py-6 flex items-center gap-2 w-full justify-center">
-              <Ticket className="w-5 h-5 text-white" />
+              <Ticket className="size-5 text-white" />
               {priceInPLN === 0 ? (
                 <span>To wydarzenie jest darmowe</span>
               ) : (
