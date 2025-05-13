@@ -27,6 +27,7 @@ export default function EventCard({ event }: EventCardProps) {
           <Image
             src={event.imageUrl}
             alt={event.title}
+            title={event.title}
             fill
             style={{ objectFit: 'cover' }}
           />

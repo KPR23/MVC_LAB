@@ -2,7 +2,7 @@ import 'server-only';
 
 import { eq } from 'drizzle-orm';
 import db from './drizzle';
-import { events } from './schema';
+import { events, artists, eventArtists } from './schema';
 
 export const Queries = {
   getEvents: function () {
@@ -17,6 +17,16 @@ export const Queries = {
       .from(events)
       .where(eq(events.title, encodeURIComponent(title)));
   },
+  getArtistsByEventId: function (eventId: string) {
+    return db
+      .select({
+        id: artists.id,
+        name: artists.name,
+      })
+      .from(artists)
+      .innerJoin(eventArtists, eq(eventArtists.artistId, artists.id))
+      .where(eq(eventArtists.eventId, eventId));
+  },
 };
 
 export const Mutations = {
@@ -24,7 +34,7 @@ export const Mutations = {
     event: {
       title: string;
       description: string;
-      artists: string;
+      artists: Array<{ id: string; name: string }>;
       organizer: string;
       category: string;
       city: string;
@@ -39,18 +49,186 @@ export const Mutations = {
     };
   }) {
     try {
-      console.log('Attempting database insertion...');
-      const result = await db.insert(events).values({
-        ...input.event,
-        dateFrom: input.event.dateFrom,
-        dateTo: input.event.dateTo,
-        time: input.event.time,
-      });
-      console.log('Database insertion successful:', result);
-      return result;
+      const eventResult = await db
+        .insert(events)
+        .values({
+          title: input.event.title,
+          description: input.event.description,
+          organizer: input.event.organizer,
+          category: input.event.category,
+          city: input.event.city,
+          location: input.event.location,
+          imageUrl: input.event.imageUrl,
+          dateFrom: input.event.dateFrom,
+          dateTo: input.event.dateTo,
+          time: input.event.time,
+          capacity: input.event.capacity,
+          availableSeats: input.event.availableSeats,
+          price: input.event.price,
+        })
+        .returning({ id: events.id });
+
+      const eventId = eventResult[0].id;
+
+      for (const artist of input.event.artists) {
+        let artistId;
+
+        const existingArtistByName = await db
+          .select({ id: artists.id })
+          .from(artists)
+          .where(eq(artists.name, artist.name));
+
+        if (existingArtistByName.length > 0) {
+          artistId = existingArtistByName[0].id;
+        } else if (artist.id) {
+          const existingArtistById = await db
+            .select({ id: artists.id })
+            .from(artists)
+            .where(eq(artists.id, artist.id));
+
+          if (existingArtistById.length > 0) {
+            artistId = existingArtistById[0].id;
+          } else {
+            const newArtist = await db
+              .insert(artists)
+              .values({
+                id: artist.id,
+                name: artist.name,
+              })
+              .returning({ id: artists.id });
+            artistId = newArtist[0].id;
+          }
+        } else {
+          const newArtist = await db
+            .insert(artists)
+            .values({
+              name: artist.name,
+            })
+            .returning({ id: artists.id });
+          artistId = newArtist[0].id;
+        }
+
+        await db.insert(eventArtists).values({
+          eventId: eventId,
+          artistId: artistId,
+        });
+      }
+
+      return { eventId };
     } catch (dbError) {
-      console.error('Database insertion error:', dbError);
-      throw new Error('Failed to save event to the database.');
+      throw new Error('Failed to save event to the database.', {
+        cause: dbError,
+      });
     }
+  },
+
+  updateEvent: async function (input: {
+    event: {
+      id: string;
+      title: string;
+      description: string;
+      artists: Array<{ id?: string; name: string }>;
+      organizer: string;
+      category: string;
+      city: string;
+      location: string;
+      imageUrl: string;
+      dateFrom: string;
+      dateTo: string;
+      time: string;
+      capacity: number;
+      availableSeats: number;
+      price: number;
+    };
+  }) {
+    try {
+      if (!input.event.id) {
+        throw new Error('Event ID is required for update');
+      }
+
+      // Update event basic info
+      await db
+        .update(events)
+        .set({
+          title: input.event.title,
+          description: input.event.description,
+          organizer: input.event.organizer,
+          category: input.event.category,
+          city: input.event.city,
+          location: input.event.location,
+          imageUrl: input.event.imageUrl,
+          dateFrom: input.event.dateFrom,
+          dateTo: input.event.dateTo,
+          time: input.event.time,
+          capacity: input.event.capacity,
+          availableSeats: input.event.availableSeats,
+          price: input.event.price,
+        })
+        .where(eq(events.id, input.event.id));
+
+      // Delete existing artist relationships for this event
+      await db
+        .delete(eventArtists)
+        .where(eq(eventArtists.eventId, input.event.id));
+
+      // Add updated artist relationships
+      for (const artist of input.event.artists) {
+        let artistId;
+
+        // Check if artist exists by name
+        const existingArtistByName = await db
+          .select({ id: artists.id })
+          .from(artists)
+          .where(eq(artists.name, artist.name));
+
+        if (existingArtistByName.length > 0) {
+          artistId = existingArtistByName[0].id;
+        } else if (artist.id) {
+          // Check if artist exists by ID
+          const existingArtistById = await db
+            .select({ id: artists.id })
+            .from(artists)
+            .where(eq(artists.id, artist.id));
+
+          if (existingArtistById.length > 0) {
+            artistId = existingArtistById[0].id;
+          } else {
+            // Create new artist with provided ID
+            const newArtist = await db
+              .insert(artists)
+              .values({
+                id: artist.id,
+                name: artist.name,
+              })
+              .returning({ id: artists.id });
+            artistId = newArtist[0].id;
+          }
+        } else {
+          // Create new artist with generated ID
+          const newArtist = await db
+            .insert(artists)
+            .values({
+              name: artist.name,
+            })
+            .returning({ id: artists.id });
+          artistId = newArtist[0].id;
+        }
+
+        // Create relationship between event and artist
+        await db.insert(eventArtists).values({
+          eventId: input.event.id,
+          artistId: artistId,
+        });
+      }
+
+      return { eventId: input.event.id };
+    } catch (dbError) {
+      throw new Error('Failed to update event in the database.', {
+        cause: dbError,
+      });
+    }
+  },
+  deleteEvent: async function (input: { event: { id: string } }) {
+    await db.delete(events).where(eq(events.id, input.event.id));
   },
 };

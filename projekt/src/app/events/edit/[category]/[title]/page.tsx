@@ -1,21 +1,21 @@
 import { TitleBox } from '@/src/components';
 import EditEventForm from '@/src/components/EditEventForm';
-import { EventController } from '@/src/controllers/EventController';
+import { EventModel } from '@/src/models/EventModel';
 
 export default async function EditEventPage(props: {
   params: Promise<{ category: string; title: string }>;
 }) {
   const { category, title } = await props.params;
-  const event = await EventController.getEvent(
+  const event = await EventModel.getEventBySlug(
     decodeURIComponent(category),
     decodeURIComponent(title)
   );
 
   if (event) {
-    const categoryArray = event.category ? [event.category] : ['Inne'];
     const formattedEvent = {
       ...event,
-      category: categoryArray as [string, ...string[]],
+      category: event.category,
+      artists: event.artistsData,
     };
 
     return (
