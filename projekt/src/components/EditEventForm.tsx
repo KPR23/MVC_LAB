@@ -1,7 +1,6 @@
 'use client';
 
 import { Button } from '@/src/components/ui/button';
-import { Checkbox } from '@/src/components/ui/checkbox';
 import {
   Form,
   FormControl,
@@ -12,15 +11,23 @@ import {
   FormMessage,
 } from '@/src/components/ui/form';
 import { Input } from '@/src/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/src/components/ui/select';
 import { Textarea } from '@/src/components/ui/textarea';
 import {
+  ArtistFormValues,
   eventFormSchema,
   EventFormValues,
 } from '@/src/utils/schemas/eventSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Plus, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-
+import { useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { DatePickerWithRange } from './ui/datepicker';
 
@@ -38,6 +45,12 @@ export default function EditEventForm(event: EventFormValues) {
     resolver: zodResolver(eventFormSchema),
     defaultValues: event,
   });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: 'artists',
+  });
+
   const defaultValues: EventFormValues = {
     title: event.title,
     artists: event.artists,
@@ -53,6 +66,30 @@ export default function EditEventForm(event: EventFormValues) {
     dateTo: event.dateTo,
     time: event.time,
   };
+
+  async function handleDelete(eventId: string) {
+    try {
+      const response = await fetch(`/api/events`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: eventId }),
+      });
+      if (response.ok) {
+        toast.success('Wydarzenie usunięte pomyślnie');
+        router.push('/events');
+        return true;
+      } else {
+        toast.error('Nie udało się usunąć wydarzenia');
+        return false;
+      }
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      toast.error('Nie udało się usunąć wydarzenia');
+      return false;
+    }
+  }
   async function onSubmit(values: EventFormValues) {
     try {
       const eventInputData = formatEventData(values);
@@ -88,18 +125,33 @@ export default function EditEventForm(event: EventFormValues) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <EventDetailsSection form={form} />
+          <EventDetailsSection
+            form={form}
+            fields={fields}
+            append={append}
+            remove={remove}
+          />
           <LocationAndDateSection form={form} />
         </div>
-        <div className="flex justify-end">
-          <Button type="submit">Zaktualizuj wydarzenie</Button>x
+        <div className="flex justify-end gap-4">
+          <Button
+            variant="outline"
+            className="hover:bg-destructive"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              handleDelete(event.id!);
+            }}
+          >
+            Usuń wydarzenie
+          </Button>
+          <Button type="submit">Zaktualizuj wydarzenie</Button>
         </div>
       </form>
     </Form>
   );
 }
 
-// Helper to format the event data for API submission
 function formatEventData(values: EventFormValues) {
   const [year, month, day] = values.dateFrom.split('-').map(Number);
   const [yearTo, monthTo, dayTo] = values.dateTo.split('-').map(Number);
@@ -124,12 +176,18 @@ function formatEventData(values: EventFormValues) {
   const dateOnlyString = eventDateFromObject.toISOString().split('T')[0];
   const dateOnlyStringTo = eventDateToObject.toISOString().split('T')[0];
 
+  const artists = values.artists.map((artist) => ({
+    ...artist,
+    id: artist.id || crypto.randomUUID(),
+  }));
+
   return {
+    id: values.id,
     title: values.title,
     description: values.description,
-    artists: values.artists,
+    artists: artists,
     organizer: values.organizer,
-    category: values.category.join(', '),
+    category: values.category,
     city: values.city,
     location: values.location,
     imageUrl: values.imageUrl,
@@ -144,8 +202,14 @@ function formatEventData(values: EventFormValues) {
 
 function EventDetailsSection({
   form,
+  fields,
+  append,
+  remove,
 }: {
   form: ReturnType<typeof useForm<EventFormValues>>;
+  fields: any[];
+  append: (value: ArtistFormValues) => void;
+  remove: (index: number) => void;
 }) {
   return (
     <div className="space-y-4">
@@ -163,19 +227,54 @@ function EventDetailsSection({
         )}
       />
 
-      <FormField
-        control={form.control}
-        name="artists"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Artysta/Artyści</FormLabel>
-            <FormControl>
-              <Input placeholder="Linkin Park" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+      <div>
+        <FormLabel className="mb-2">Artyści</FormLabel>
+        <div className="space-y-2">
+          {fields.map((field, index) => (
+            <div key={field.id} className="flex items-center gap-2">
+              <FormField
+                control={form.control}
+                name={`artists.${index}.name`}
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormControl>
+                      <Input
+                        placeholder="Nazwa artysty"
+                        {...field}
+                        className="w-full"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {fields.length > 1 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => remove(index)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={() => append({ name: '' })}
+          >
+            <Plus className="h-4 w-4" /> Dodaj kolejnego artystę
+          </Button>
+        </div>
+        {form.formState.errors.artists?.message && (
+          <p className="text-sm font-medium text-destructive mt-2">
+            {form.formState.errors.artists.message}
+          </p>
         )}
-      />
+      </div>
 
       <FormField
         control={form.control}
@@ -214,47 +313,20 @@ function EventDetailsSection({
         render={({ field }) => (
           <FormItem>
             <FormLabel>Kategoria</FormLabel>
-            <div className="grid grid-cols-2 gap-2">
-              {EVENT_CATEGORIES.map((item) => (
-                <FormField
-                  key={item.id}
-                  control={form.control}
-                  name="category"
-                  render={({ field: categoryField }) => {
-                    const checked = categoryField.value.includes(item.id);
-                    return (
-                      <FormItem
-                        key={item.id}
-                        className="flex flex-row items-start space-x-3 space-y-0"
-                      >
-                        <FormControl>
-                          <Checkbox
-                            checked={checked}
-                            onCheckedChange={(isChecked) => {
-                              if (isChecked) {
-                                categoryField.onChange([
-                                  ...categoryField.value,
-                                  item.id,
-                                ]);
-                              } else {
-                                categoryField.onChange(
-                                  categoryField.value?.filter(
-                                    (value) => value !== item.id
-                                  )
-                                );
-                              }
-                            }}
-                          />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          {item.label}
-                        </FormLabel>
-                      </FormItem>
-                    );
-                  }}
-                />
-              ))}
-            </div>
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Wybierz kategorię" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {EVENT_CATEGORIES.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <FormDescription>
               Kategoria, do której należy wydarzenie.
             </FormDescription>

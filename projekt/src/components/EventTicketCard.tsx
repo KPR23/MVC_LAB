@@ -1,10 +1,17 @@
+'use client';
+
 import { Ticket } from 'lucide-react';
 import { DB_EventType } from '../server/db/schema';
 import { getEventDateInfo } from '../utils/eventUtils';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function EventTicketCard(event: DB_EventType) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
   const {
     fullDayName,
     priceInPLN,
@@ -12,6 +19,31 @@ export default function EventTicketCard(event: DB_EventType) {
     shortMonthWithYear,
     fullMonthWithYear,
   } = getEventDateInfo(event);
+
+  const handleBuyTicket = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/stripe?eventId=${event.id}`, {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to check existing product');
+      }
+
+      const data = await response.json();
+
+      if (data.exists) {
+        router.push(`/events/pay?priceId=${data.priceId}`);
+      } else {
+        throw new Error('No product found');
+      }
+    } catch (error) {
+      console.error('Error buying ticket:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Card className="relative w-full bg-card rounded-lg shadow-sm overflow-hidden px-4">
@@ -44,9 +76,15 @@ export default function EventTicketCard(event: DB_EventType) {
           </div>
 
           <div className="py-6 px-6 md:w-2/6 flex flex-col items-center justify-center bg-card">
-            <Button className="bg-primary transition-colors py-6 flex items-center gap-2 w-full justify-center">
+            <Button
+              className="bg-primary transition-colors py-6 flex items-center gap-2 w-full justify-center "
+              onClick={handleBuyTicket}
+              disabled={loading}
+            >
               <Ticket className="size-5 text-white" />
-              {priceInPLN === 0 ? (
+              {loading ? (
+                <span>Przetwarzanie...</span>
+              ) : priceInPLN === 0 ? (
                 <span>To wydarzenie jest darmowe</span>
               ) : (
                 <span>

@@ -9,25 +9,27 @@ import {
   BreadcrumbSeparator,
 } from '@/src/components/ui/breadcrumb';
 import { Button } from '@/src/components/ui/button';
-import { EventController } from '@/src/controllers/EventController';
-import { getEventDateInfo } from '@/src/utils/eventUtils';
+import { EventModel } from '@/src/models/EventModel';
+import { createSlug, getEventDateInfo } from '@/src/utils/eventUtils';
 import { Calendar, MapPin, Ticket } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { toast } from 'sonner';
 
 export default async function EventPage(props: {
   params: Promise<{ category: string; title: string }>;
 }) {
   const { category, title } = await props.params;
-  const event = await EventController.getEvent(
+  const event = await EventModel.getEventBySlug(
     decodeURIComponent(category),
     decodeURIComponent(title)
   );
-
   if (!event) {
     notFound();
   }
+
+  const eventSlug = `${createSlug(event.category)}/${createSlug(event.title)}`;
 
   const {
     daysDifference,
@@ -35,6 +37,17 @@ export default async function EventPage(props: {
     fullMonthWithoutYear,
     fullMonthWithYear,
   } = getEventDateInfo(event);
+
+  async function handleDelete(eventSlug: string) {
+    const response = await fetch(`/api/events/${eventSlug}`, {
+      method: 'DELETE',
+    });
+    if (response.ok) {
+      toast.success('Wydarzenie usunięte pomyślnie');
+    } else {
+      toast.error('Nie udało się usunąć wydarzenia');
+    }
+  }
 
   return (
     <div className="xl:px-50 2xl:px-80 py-6">
@@ -62,7 +75,6 @@ export default async function EventPage(props: {
           </Button>
         </Link>
       </div>
-
       <div className="flex flex-wrap gap-4 mb-8">
         <Badge className="rounded-full">{event.category}</Badge>
         <div className="flex items-center gap-2 text-muted-foreground">
@@ -78,7 +90,6 @@ export default async function EventPage(props: {
           <span>{event.city}</span>
         </div>
       </div>
-
       <div className="lg:flex gap-x-12 mb-12">
         <div className="w-80 shrink-0 space-y-6 lg:sticky lg:top-6 self-start">
           <div className="relative aspect-[3/4] w-full">
@@ -88,6 +99,7 @@ export default async function EventPage(props: {
               fill
               objectFit="cover"
               className="rounded-xl"
+              priority
             />
           </div>
 
@@ -177,13 +189,19 @@ export default async function EventPage(props: {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-3xl font-bold">Artyści</h2>
             </div>
-            <h3 className="text-lg mb-6">
-              {event.artists.length > 1
-                ? event.artists
-                    .split(',')
-                    .map((artist) => <span key={artist}>{artist}</span>)
-                : event.artists}
-            </h3>
+            <div className="space-y-3">
+              {event.artistsData && event.artistsData.length > 0 ? (
+                event.artistsData.map((artist) => (
+                  <div key={artist.id} className="p-4 border rounded-lg">
+                    <h3 className="text-xl font-medium">{artist.name}</h3>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted-foreground">
+                  Brak informacji o artystach
+                </p>
+              )}
+            </div>
           </section>
           <section id="location">
             <div className="flex justify-between items-center mb-6">
@@ -192,6 +210,11 @@ export default async function EventPage(props: {
             <h3 className="text-lg mb-6">{event.location}</h3>
           </section>
         </div>
+      </div>
+      <div className="flex justify-end">
+        <Link href={`/events/edit/${eventSlug}`}>
+          <Button variant="outline">Edytuj lub usuń wydarzenie</Button>
+        </Link>
       </div>
     </div>
   );
