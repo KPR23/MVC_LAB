@@ -17,6 +17,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Eventix',
   description: 'Bilety na koncerty, festiwale, wydarzenia - Eventix',
+  icons: {
+    icon: '/eventix.svg',
+  },
 };
 
 export default function RootLayout({

@@ -1,14 +1,20 @@
 'use client';
 
 import { Ticket } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { DB_EventType } from '../server/db/schema';
 import { getEventDateInfo } from '../utils/eventUtils';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+type EventTicketCardProps = DB_EventType & {
+  cardType: 'ticket' | 'pass';
+};
 
-export default function EventTicketCard(event: DB_EventType) {
+export default function EventTicketCard(props: EventTicketCardProps) {
+  const { cardType, ...event } = props;
+
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -18,9 +24,13 @@ export default function EventTicketCard(event: DB_EventType) {
     shortMonthWithoutYear,
     shortMonthWithYear,
     fullMonthWithYear,
+    shortDayName,
+    shortDayNameTo,
+    passPriceInPLN,
+    eventDates,
   } = getEventDateInfo(event);
 
-  const handleBuyTicket = async () => {
+  const handleBuy = async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/stripe?eventId=${event.id}`, {
@@ -28,23 +38,46 @@ export default function EventTicketCard(event: DB_EventType) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to check existing product');
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to check existing product: ${response.status} - ${errorText}`
+        );
       }
 
       const data = await response.json();
 
       if (data.exists) {
-        router.push(`/events/pay?priceId=${data.priceId}`);
+        if (cardType === 'ticket') {
+          if (data.priceId) {
+            router.push(`/events/pay?priceId=${data.priceId}`);
+          } else {
+            throw new Error('Single ticket price ID not found for this event.');
+          }
+        } else if (cardType === 'pass') {
+          if (data.passPriceId) {
+            router.push(`/events/pay?priceId=${data.passPriceId}`);
+          } else {
+            console.warn('Pass product ID not found for this event.');
+            toast.error('Karnet nie jest dostępny dla tego wydarzenia.');
+          }
+        }
       } else {
-        throw new Error('No product found');
+        console.error(
+          'No Stripe product found for this event. Ensure products are created.'
+        );
+        toast.error('Bilety nie są jeszcze dostępne dla tego wydarzenia.');
       }
     } catch (error) {
       console.error('Error buying ticket:', error);
+      toast.error(
+        'Wystąpił błąd podczas przetwarzania zakupu. Spróbuj ponownie później.'
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  const isMultiDayDisplay = event.dateFrom !== event.dateTo;
   return (
     <Card className="relative w-full bg-card rounded-lg shadow-sm overflow-hidden px-4">
       <div className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-8 bg-muted rounded-r-full z-10"></div>
@@ -52,9 +85,13 @@ export default function EventTicketCard(event: DB_EventType) {
       <div className="rounded-lg">
         <div className="flex flex-col items-stretch md:flex-row">
           <div className="md:py-6 px-6 md:w-1/6 relative flex flex-col justify-center">
-            <div className="text-muted-foreground">{fullDayName}</div>
+            <div className="text-muted-foreground">
+              {!isMultiDayDisplay
+                ? fullDayName
+                : `${shortDayName} - ${shortDayNameTo}`}
+            </div>
             <div className="text-xl font-bold text-foreground">
-              {event.dateFrom === event.dateTo
+              {!isMultiDayDisplay
                 ? fullMonthWithYear
                 : `${shortMonthWithoutYear} - ${shortMonthWithYear}`}
             </div>
@@ -78,14 +115,19 @@ export default function EventTicketCard(event: DB_EventType) {
           <div className="py-6 px-6 md:w-2/6 flex flex-col items-center justify-center bg-card">
             <Button
               className="bg-primary transition-colors py-6 flex items-center gap-2 w-full justify-center "
-              onClick={handleBuyTicket}
-              disabled={loading}
+              onClick={handleBuy}
+              disabled={loading || priceInPLN === 0}
             >
               <Ticket className="size-5 text-white" />
               {loading ? (
                 <span>Przetwarzanie...</span>
               ) : priceInPLN === 0 ? (
                 <span>To wydarzenie jest darmowe</span>
+              ) : cardType === 'pass' ? (
+                <span>
+                  Kup karnet od{' '}
+                  <span className="font-bold">{priceInPLN} zł</span>
+                </span>
               ) : (
                 <span>
                   Kup bilety od{' '}
@@ -93,6 +135,7 @@ export default function EventTicketCard(event: DB_EventType) {
                 </span>
               )}
             </Button>
+
             <div className="text-xs text-muted-foreground mt-2 text-center">
               Cena zawiera wszystkie opłaty obowiązkowe.
             </div>

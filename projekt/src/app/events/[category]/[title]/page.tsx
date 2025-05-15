@@ -32,7 +32,7 @@ export default async function EventPage(props: {
   const eventSlug = `${createSlug(event.category)}/${createSlug(event.title)}`;
 
   const {
-    daysDifference,
+    passPriceInPLN,
     eventDates,
     fullMonthWithoutYear,
     fullMonthWithYear,
@@ -48,7 +48,6 @@ export default async function EventPage(props: {
       toast.error('Nie udało się usunąć wydarzenia');
     }
   }
-
   return (
     <div className="xl:px-50 2xl:px-80 py-6">
       <Breadcrumb>
@@ -97,9 +96,8 @@ export default async function EventPage(props: {
               src={event.imageUrl}
               alt={event.title}
               fill
-              objectFit="cover"
+              style={{ objectFit: 'cover' }}
               className="rounded-xl"
-              priority
             />
           </div>
 
@@ -144,13 +142,11 @@ export default async function EventPage(props: {
                 <div className="mb-8">
                   <EventTicketCard
                     {...event}
+                    cardType="pass"
                     dateFrom={event.dateFrom}
                     dateTo={event.dateTo}
-                    title={`${event.title} - Karnet na wszystkie dni`}
-                    price={Math.round(event.price * daysDifference * 0.8)}
-                    availableSeats={Math.min(
-                      ...eventDates.map(() => event.availableSeats)
-                    )}
+                    title={`${event.title} - Karnet`}
+                    price={passPriceInPLN}
                   />
                 </div>
                 <div className="space-y-6">
@@ -165,6 +161,7 @@ export default async function EventPage(props: {
                       <div className="mb-6" key={date.toISOString()}>
                         <EventTicketCard
                           {...event}
+                          cardType="ticket"
                           dateFrom={date.toISOString()}
                           dateTo={date.toISOString()}
                           title={`${event.title} - ${dayName}`}
@@ -175,7 +172,7 @@ export default async function EventPage(props: {
                 </div>
               </>
             ) : (
-              <EventTicketCard {...event} />
+              <EventTicketCard {...event} cardType="ticket" />
             )}
           </section>
 

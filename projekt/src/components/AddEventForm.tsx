@@ -184,7 +184,7 @@ function formatEventData(values: EventFormValues) {
     time: values.time,
     capacity: values.capacity,
     availableSeats: values.capacity,
-    price: values.price,
+    price: Math.round(values.price * 100),
   };
 }
 
@@ -466,19 +466,30 @@ function LocationAndDateSection({
           <FormItem>
             <FormLabel>Cena biletu</FormLabel>
             <FormControl>
-              <Input
-                placeholder="194.99"
-                type="number"
-                min="0"
-                step="0.01"
-                {...field}
-                value={isNaN(field.value) ? '' : field.value}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  field.onChange(value === '' ? undefined : parseFloat(value));
-                }}
-              />
+              <div className="relative">
+                <Input
+                  placeholder="194.99"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  className="pl-8"
+                  {...field}
+                  value={isNaN(field.value) ? '' : field.value}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    field.onChange(
+                      value === '' ? undefined : parseFloat(value)
+                    );
+                  }}
+                />
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+                  zł
+                </div>
+              </div>
             </FormControl>
+            <FormDescription>
+              Cena biletu w złotych (zapisana w systemie w groszach).
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}

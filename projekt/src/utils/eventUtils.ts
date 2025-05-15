@@ -29,6 +29,9 @@ export function getEventDateInfo(event: {
   });
 
   let shortDayName = dateFrom.toLocaleDateString('pl-PL', { weekday: 'short' });
+  let shortDayNameTo = dateTo.toLocaleDateString('pl-PL', {
+    weekday: 'short',
+  });
   let fullDayName = dateFrom.toLocaleDateString('pl-PL', { weekday: 'long' });
 
   if (shortDayName.endsWith('.')) {
@@ -38,7 +41,6 @@ export function getEventDateInfo(event: {
   const daysDifference = Math.ceil(
     (dateTo.getTime() - dateFrom.getTime()) / (1000 * 60 * 60 * 24)
   );
-
   const capitalizedShortDayName = capitalizeFirstLetter(shortDayName);
 
   const eventDates = Array.from({ length: daysDifference + 1 }, (_, i) => {
@@ -48,6 +50,7 @@ export function getEventDateInfo(event: {
   });
 
   const priceInPLN = event.price / 100;
+  const passPriceInPLN = Math.round(priceInPLN * eventDates.length * 0.9 * 100);
 
   return {
     dateFrom,
@@ -57,11 +60,13 @@ export function getEventDateInfo(event: {
     fullMonthWithYear,
     fullMonthWithoutYear,
     shortDayName,
+    shortDayNameTo,
     fullDayName,
     capitalizedShortDayName,
     daysDifference,
     eventDates,
     priceInPLN,
+    passPriceInPLN,
   };
 }
 
