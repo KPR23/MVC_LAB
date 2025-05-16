@@ -77,12 +77,22 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { event } = body;
+    console.log(
+      '[STRIPE API] Full parsed request body:',
+      JSON.stringify(body, null, 2)
+    );
 
-    console.log('Received event data:', JSON.stringify(event, null, 2));
+    // Log the structure of body.event to be certain.
+    // This log shows: body.event = { event: { eventId: "..." }, message: "..." }
+    console.log(
+      '[STRIPE API] Parsed body.event content:',
+      JSON.stringify(body.event, null, 2)
+    );
 
-    // Check for event.id from the request body
-    let eventId = event?.id;
+    // Correctly access the nested event object and its eventId
+    const actualEventObject = body.event?.event;
+    let eventId = actualEventObject?.eventId;
+    const event = actualEventObject; // 'event' now refers to the actual event data { eventId: "...", ... }
 
     // If no event ID in the request body, check URL parameters
     if (!eventId) {

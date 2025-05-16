@@ -484,7 +484,7 @@ function LocationAndDateSection({
                   type="number"
                   min="0"
                   step="0.01"
-                  className="pl-8"
+                  className="pl-12"
                   {...field}
                   value={isNaN(field.value) ? '' : field.value}
                   onChange={(e) => {
@@ -495,13 +495,10 @@ function LocationAndDateSection({
                   }}
                 />
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
-                  zł
+                  PLN
                 </div>
               </div>
             </FormControl>
-            <FormDescription>
-              Cena biletu w złotych (zapisana w systemie w groszach).
-            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
