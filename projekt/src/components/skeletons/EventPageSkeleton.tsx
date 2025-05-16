@@ -1,14 +1,14 @@
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@/src/components/ui/skeleton';
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbList,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
+} from '@/src/components/ui/breadcrumb';
 
 export default function EventPageSkeleton() {
   return (
-    <div className="mx-64 px-10 py-6">
+    <div className="xl:px-50 2xl:px-80 py-6">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>

@@ -1,7 +1,6 @@
 'use client';
 
 import { Button } from '@/src/components/ui/button';
-import { Checkbox } from '@/src/components/ui/checkbox';
 import {
   Form,
   FormControl,
@@ -12,7 +11,6 @@ import {
   FormMessage,
 } from '@/src/components/ui/form';
 import { Input } from '@/src/components/ui/input';
-import { Textarea } from '@/src/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -20,19 +18,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/src/components/ui/select';
+import { Textarea } from '@/src/components/ui/textarea';
 import {
+  ArtistFormValues,
   eventFormSchema,
   EventFormValues,
-  ArtistFormValues,
 } from '@/src/utils/schemas/eventSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Plus, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useForm, useFieldArray } from 'react-hook-form';
-
+import { useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { DatePickerWithRange } from './ui/datepicker';
-import { useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
 
 const EVENT_CATEGORIES = [
   { id: 'Muzyka', label: 'Muzyka' },
@@ -42,28 +39,11 @@ const EVENT_CATEGORIES = [
   { id: 'Inne', label: 'Inne' },
 ] as const;
 
-const DEFAULT_VALUES: EventFormValues = {
-  title: '',
-  artists: [{ name: '' }],
-  organizer: '',
-  description: '',
-  category: 'Muzyka',
-  city: '',
-  location: '',
-  capacity: 1,
-  imageUrl: '',
-  price: 0,
-  dateFrom: '',
-  dateTo: '',
-  time: '',
-};
-
-export default function AddEventForm() {
+export default function EditEventForm(event: EventFormValues) {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
-    defaultValues: DEFAULT_VALUES,
+    defaultValues: event,
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -71,55 +51,60 @@ export default function AddEventForm() {
     name: 'artists',
   });
 
+  const defaultValues: EventFormValues = {
+    title: event.title,
+    artists: event.artists,
+    organizer: event.organizer,
+    description: event.description,
+    category: event.category,
+    city: event.city,
+    location: event.location,
+    capacity: event.capacity,
+    imageUrl: event.imageUrl,
+    price: event.price,
+    dateFrom: event.dateFrom,
+    dateTo: event.dateTo,
+    time: event.time,
+  };
+
+  async function handleDelete(eventId: string) {
+    try {
+      const response = await fetch(`/api/events`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: eventId }),
+      });
+      if (response.ok) {
+        toast.success('Wydarzenie usunięte pomyślnie');
+        router.push('/events');
+        return true;
+      } else {
+        toast.error('Nie udało się usunąć wydarzenia');
+        return false;
+      }
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      toast.error('Nie udało się usunąć wydarzenia');
+      return false;
+    }
+  }
   async function onSubmit(values: EventFormValues) {
     try {
-      setLoading(true);
       const eventInputData = formatEventData(values);
 
       const response = await fetch('/api/events', {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(eventInputData),
       });
 
-      const createdEvent = await response.json();
-
-      const eventDetailsForStripe = {
-        ...eventInputData,
-        eventId: createdEvent.event.eventId,
-      };
-
-      const payloadForStripe = {
-        event: {
-          event: eventDetailsForStripe,
-          message: createdEvent.message,
-        },
-      };
-
-      console.log(
-        '[AddEventForm] Payload for /api/stripe:',
-        JSON.stringify(payloadForStripe, null, 2)
-      );
-
-      const stripeResponse = await fetch('/api/stripe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payloadForStripe),
-      });
-
-      if (!stripeResponse.ok && !response.ok) {
-        const stripeErrorData = await stripeResponse.json();
+      if (!response.ok) {
         const errorData = await response.json();
-        toast.error(
-          stripeErrorData.message || errorData.message || 'Failed to add event'
-        );
-        throw new Error(
-          stripeErrorData.message || errorData.message || 'Failed to add event'
-        );
+        throw new Error(errorData.message || 'Failed to add event');
       }
 
       toast.success('Wydarzenie dodane pomyślnie!');
@@ -133,8 +118,6 @@ export default function AddEventForm() {
           ? error.message
           : 'Failed to submit the form. Please try again.'
       );
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -150,10 +133,19 @@ export default function AddEventForm() {
           />
           <LocationAndDateSection form={form} />
         </div>
-        <div className="flex justify-end">
-          <Button type="submit" disabled={loading}>
-            {loading ? 'Dodawanie...' : 'Dodaj wydarzenie'}
+        <div className="flex justify-end gap-4">
+          <Button
+            variant="outline"
+            className="hover:bg-destructive"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              handleDelete(event.id!);
+            }}
+          >
+            Usuń wydarzenie
           </Button>
+          <Button type="submit">Zaktualizuj wydarzenie</Button>
         </div>
       </form>
     </Form>
@@ -190,6 +182,7 @@ function formatEventData(values: EventFormValues) {
   }));
 
   return {
+    id: values.id,
     title: values.title,
     description: values.description,
     artists: artists,
@@ -270,7 +263,7 @@ function EventDetailsSection({
           <Button
             type="button"
             variant="outline"
-            className=" w-full"
+            className="w-full"
             onClick={() => append({ name: '' })}
           >
             <Plus className="h-4 w-4" /> Dodaj kolejnego artystę

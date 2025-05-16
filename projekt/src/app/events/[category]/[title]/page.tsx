@@ -1,11 +1,5 @@
-import { Queries } from '@/src/server/db/queries';
-import { notFound } from 'next/navigation';
-import Image from 'next/image';
-import { Calendar, MapPin, Ticket } from 'lucide-react';
-import { Badge } from '@/src/components/ui/badge';
 import { EventTicketCard } from '@/src/components';
-import { Button } from '@/src/components/ui/button';
-import Link from 'next/link';
+import { Badge } from '@/src/components/ui/badge';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -13,30 +7,49 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
+} from '@/src/components/ui/breadcrumb';
+import { Button } from '@/src/components/ui/button';
+import { EventModel } from '@/src/models/EventModel';
+import { createSlug, getEventDateInfo } from '@/src/utils/eventUtils';
+import { Calendar, MapPin, Ticket } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { toast } from 'sonner';
 
 export default async function EventPage(props: {
   params: Promise<{ category: string; title: string }>;
 }) {
-  const params = await props.params;
-  const events = await Queries.getEvents();
-
-  const decodedCategory = decodeURIComponent(params.category);
-  const decodedTitle = decodeURIComponent(params.title);
-
-  const event = events.find(
-    (e) =>
-      e.category.toLowerCase().replace(/[^a-z0-9]+/g, '-') ===
-        decodedCategory &&
-      e.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === decodedTitle
+  const { category, title } = await props.params;
+  const event = await EventModel.getEventBySlug(
+    decodeURIComponent(category),
+    decodeURIComponent(title)
   );
-
   if (!event) {
     notFound();
   }
 
+  const eventSlug = `${createSlug(event.category)}/${createSlug(event.title)}`;
+
+  const {
+    passPriceInPLN,
+    eventDates,
+    fullMonthWithoutYear,
+    fullMonthWithYear,
+  } = getEventDateInfo(event);
+
+  async function handleDelete(eventSlug: string) {
+    const response = await fetch(`/api/events/${eventSlug}`, {
+      method: 'DELETE',
+    });
+    if (response.ok) {
+      toast.success('Wydarzenie usunięte pomyślnie');
+    } else {
+      toast.error('Nie udało się usunąć wydarzenia');
+    }
+  }
   return (
-    <div className="mx-64 px-10 py-6">
+    <div className="xl:px-50 2xl:px-80 py-6">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -61,27 +74,29 @@ export default async function EventPage(props: {
           </Button>
         </Link>
       </div>
-
       <div className="flex flex-wrap gap-4 mb-8">
         <Badge className="rounded-full">{event.category}</Badge>
         <div className="flex items-center gap-2 text-muted-foreground">
-          <Calendar className="w-5 h-5" />
-          <span>{event.date}</span>
+          <Calendar className="w-5 h-5 text-primary" />
+          <span>
+            {event.dateFrom === event.dateTo
+              ? fullMonthWithYear
+              : `${fullMonthWithoutYear} - ${fullMonthWithYear}`}
+          </span>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
-          <MapPin className="w-5 h-5" />
+          <MapPin className="w-5 h-5 text-primary" />
           <span>{event.city}</span>
         </div>
       </div>
-
       <div className="lg:flex gap-x-12 mb-12">
-        <div className="w-80 shrink-0 space-y-6">
+        <div className="w-80 shrink-0 space-y-6 lg:sticky lg:top-6 self-start">
           <div className="relative aspect-[3/4] w-full">
             <Image
               src={event.imageUrl}
               alt={event.title}
               fill
-              objectFit="cover"
+              style={{ objectFit: 'cover' }}
               className="rounded-xl"
             />
           </div>
@@ -118,9 +133,47 @@ export default async function EventPage(props: {
               <h2 className="text-3xl font-bold">Bilety</h2>
             </div>
 
-            <h3 className="text-2xl font-bold mb-6">{event.city}</h3>
+            <h3 className="text-2xl font-bold mb-6">
+              {event.dateFrom === event.dateTo ? event.city : 'Karnety'}
+            </h3>
 
-            <EventTicketCard {...event} />
+            {event.dateFrom !== event.dateTo ? (
+              <>
+                <div className="mb-8">
+                  <EventTicketCard
+                    {...event}
+                    cardType="pass"
+                    dateFrom={event.dateFrom}
+                    dateTo={event.dateTo}
+                    title={`${event.title} - Karnet`}
+                    price={passPriceInPLN}
+                  />
+                </div>
+                <div className="space-y-6">
+                  <h3 className="text-2xl font-bold mb-6">
+                    Bilety jednodniowe
+                  </h3>
+                  {eventDates.map((date) => {
+                    const dayName = date.toLocaleDateString('pl-PL', {
+                      weekday: 'long',
+                    });
+                    return (
+                      <div className="mb-6" key={date.toISOString()}>
+                        <EventTicketCard
+                          {...event}
+                          cardType="ticket"
+                          dateFrom={date.toISOString()}
+                          dateTo={date.toISOString()}
+                          title={`${event.title} - ${dayName}`}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <EventTicketCard {...event} cardType="ticket" />
+            )}
           </section>
 
           <section id="event-info">
@@ -133,7 +186,19 @@ export default async function EventPage(props: {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-3xl font-bold">Artyści</h2>
             </div>
-            <h3 className="text-lg mb-6">{event.artists}</h3>
+            <div className="space-y-3">
+              {event.artistsData && event.artistsData.length > 0 ? (
+                event.artistsData.map((artist) => (
+                  <div key={artist.id} className="p-4 border rounded-lg">
+                    <h3 className="text-xl font-medium">{artist.name}</h3>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted-foreground">
+                  Brak informacji o artystach
+                </p>
+              )}
+            </div>
           </section>
           <section id="location">
             <div className="flex justify-between items-center mb-6">
@@ -142,6 +207,11 @@ export default async function EventPage(props: {
             <h3 className="text-lg mb-6">{event.location}</h3>
           </section>
         </div>
+      </div>
+      <div className="flex justify-end">
+        <Link href={`/events/edit/${eventSlug}`}>
+          <Button variant="outline">Edytuj lub usuń wydarzenie</Button>
+        </Link>
       </div>
     </div>
   );
