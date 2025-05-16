@@ -6,102 +6,86 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const eventId = searchParams.get('eventId');
 
-  if (eventId) {
-    try {
-      const existingProducts = await stripe.products.search({
-        query: `metadata["type"]:"ticket_${eventId}"`,
-      });
+  if (!eventId) {
+    return new Response(JSON.stringify({ error: 'EventId is required' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 
-      if (existingProducts.data.length > 0) {
-        const product = existingProducts.data[0];
+  try {
+    const ticketProducts = await stripe.products.search({
+      query: `metadata["type"]:"ticket_${eventId}"`,
+    });
 
-        const prices = await stripe.prices.list({
-          product: product.id,
-          limit: 1,
-          active: true,
-        });
-
-        const passProducts = await stripe.products.search({
-          query: `metadata["type"]:"pass_${eventId}"`,
-        });
-
-        let passPriceId = null;
-        if (passProducts.data.length > 0) {
-          const passProduct = passProducts.data[0];
-          const passPrices = await stripe.prices.list({
-            product: passProduct.id,
-            limit: 1,
-            active: true,
-          });
-
-          if (passPrices.data.length > 0) {
-            passPriceId = passPrices.data[0].id;
-          }
-        }
-
-        if (prices.data.length > 0) {
-          return new Response(
-            JSON.stringify({
-              productId: product.id,
-              priceId: prices.data[0].id,
-              passPriceId,
-              exists: true,
-            }),
-            {
-              status: 200,
-              headers: { 'Content-Type': 'application/json' },
-            }
-          );
-        }
-      }
-
+    if (ticketProducts.data.length === 0) {
       return new Response(JSON.stringify({ exists: false }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       });
-    } catch (error) {
-      console.error('Error searching for product:', error);
-      return new Response(
-        JSON.stringify({ error: 'Failed to search for product' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      );
     }
-  }
+    const ticketProduct = ticketProducts.data[0];
 
-  return new Response(JSON.stringify({ error: 'EventId is required' }), {
-    status: 400,
-    headers: { 'Content-Type': 'application/json' },
-  });
+    const ticketPrices = await stripe.prices.list({
+      product: ticketProduct.id,
+      limit: 1,
+      active: true,
+    });
+
+    if (ticketPrices.data.length === 0) {
+      return new Response(JSON.stringify({ exists: false }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    const ticketPriceId = ticketPrices.data[0].id;
+
+    let passPriceId = null;
+    const passProducts = await stripe.products.search({
+      query: `metadata["type"]:"pass_${eventId}"`,
+    });
+
+    if (passProducts.data.length > 0) {
+      const passProduct = passProducts.data[0];
+      const passPrices = await stripe.prices.list({
+        product: passProduct.id,
+        limit: 1,
+        active: true,
+      });
+      if (passPrices.data.length > 0) {
+        passPriceId = passPrices.data[0].id;
+      }
+    }
+
+    return new Response(
+      JSON.stringify({
+        productId: ticketProduct.id,
+        priceId: ticketPriceId,
+        passPriceId,
+        exists: true,
+      }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  } catch (error) {
+    console.error('Error searching for Stripe product:', error);
+    return new Response(
+      JSON.stringify({ error: 'Failed to search for Stripe product' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log(
-      '[STRIPE API] Full parsed request body:',
-      JSON.stringify(body, null, 2)
-    );
+    const searchParams = request.nextUrl.searchParams;
 
-    // Log the structure of body.event to be certain.
-    // This log shows: body.event = { event: { eventId: "..." }, message: "..." }
-    console.log(
-      '[STRIPE API] Parsed body.event content:',
-      JSON.stringify(body.event, null, 2)
-    );
+    let eventDetails = body.event?.event;
+    let eventId = eventDetails?.eventId || searchParams.get('eventId');
 
-    // Correctly access the nested event object and its eventId
-    const actualEventObject = body.event?.event;
-    let eventId = actualEventObject?.eventId;
-    const event = actualEventObject; // 'event' now refers to the actual event data { eventId: "...", ... }
-
-    // If no event ID in the request body, check URL parameters
-    if (!eventId) {
-      const searchParams = request.nextUrl.searchParams;
-      eventId = searchParams.get('eventId');
-      console.log('Using eventId from URL params:', eventId);
-    }
-
-    // Still no event ID? Return error
     if (!eventId) {
       return new Response(
         JSON.stringify({ error: 'Invalid event data: missing ID' }),
@@ -109,46 +93,80 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Add ID to event object if missing
-    if (!event.id) {
-      event.id = eventId;
+    if (eventDetails) {
+      if (!eventDetails.id) {
+        eventDetails.id = eventId;
+      }
+    } else {
+      eventDetails = { id: eventId };
+    }
+
+    const eventData = eventDetails;
+
+    if (eventId && searchParams.get('eventId') && !body.event?.event?.eventId) {
+      console.log(
+        'Stripe API: Using eventId from URL params for POST:',
+        eventId
+      );
+    }
+
+    if (
+      !eventData ||
+      !eventData.title ||
+      typeof eventData.price === 'undefined'
+    ) {
+      console.error(
+        'Stripe API: Essential event data (title, price) missing for product creation.',
+        eventData
+      );
+      return new Response(
+        JSON.stringify({
+          error: 'Essential event data for Stripe product creation is missing.',
+        }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
     }
 
     const product = await stripe.products.create({
-      name: `${event.title}`,
-      description: `Bilet na wydarzenie ${event.title} - jednodniowy`,
-      images: [event.image || event.imageUrl],
+      name: `${eventData.title}`,
+      description: `Bilet na wydarzenie ${eventData.title} - jednodniowy`,
+      images: [eventData.imageUrl],
       metadata: {
-        type: `ticket_${eventId}`,
+        type: `ticket_${eventData.id}`,
       },
     });
 
     const price = await stripe.prices.create({
       product: product.id,
-      unit_amount: event.price,
+      unit_amount: eventData.price,
       currency: 'pln',
     });
 
     let passProduct = undefined;
     let passPrice = undefined;
 
-    if (event.dateFrom !== event.dateTo) {
-      const { passPriceInPLN } = getEventDateInfo(event);
+    if (eventData.dateFrom !== eventData.dateTo) {
+      const { passPriceInPLN } = getEventDateInfo(eventData);
+      if (typeof passPriceInPLN !== 'undefined') {
+        passProduct = await stripe.products.create({
+          name: `${eventData.title} - Karnet`,
+          description: `Karnet na całe wydarzenie ${eventData.title}`,
+          images: [eventData.imageUrl],
+          metadata: {
+            type: `pass_${eventData.id}`,
+          },
+        });
 
-      passProduct = await stripe.products.create({
-        name: `${event.title} - Karnet`,
-        description: `Karnet na całe wydarzenie ${event.title}`,
-        images: [event.image || event.imageUrl],
-        metadata: {
-          type: `pass_${eventId}`,
-        },
-      });
-
-      passPrice = await stripe.prices.create({
-        product: passProduct.id,
-        unit_amount: passPriceInPLN,
-        currency: 'pln',
-      });
+        passPrice = await stripe.prices.create({
+          product: passProduct.id,
+          unit_amount: passPriceInPLN,
+          currency: 'pln',
+        });
+      } else {
+        console.warn(
+          'Stripe API: passPriceInPLN could not be determined, skipping pass creation.'
+        );
+      }
     }
 
     return new Response(
@@ -165,9 +183,13 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error('Error creating Stripe product and price:', error);
-    return new Response(
-      JSON.stringify({ error: 'Failed to create Stripe product and price' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    const errorMessage =
+      error instanceof Error && error.message
+        ? error.message
+        : 'Failed to create Stripe product and price';
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }

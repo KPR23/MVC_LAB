@@ -1,7 +1,6 @@
 'use client';
 
 import { Button } from '@/src/components/ui/button';
-import { Checkbox } from '@/src/components/ui/checkbox';
 import {
   Form,
   FormControl,
@@ -12,7 +11,6 @@ import {
   FormMessage,
 } from '@/src/components/ui/form';
 import { Input } from '@/src/components/ui/input';
-import { Textarea } from '@/src/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -20,19 +18,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/src/components/ui/select';
+import { Textarea } from '@/src/components/ui/textarea';
 import {
+  ArtistFormValues,
   eventFormSchema,
   EventFormValues,
-  ArtistFormValues,
 } from '@/src/utils/schemas/eventSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 
+import { Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { DatePickerWithRange } from './ui/datepicker';
-import { useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
 
 const EVENT_CATEGORIES = [
   { id: 'Muzyka', label: 'Muzyka' },
@@ -97,11 +96,6 @@ export default function AddEventForm() {
           message: createdEvent.message,
         },
       };
-
-      console.log(
-        '[AddEventForm] Payload for /api/stripe:',
-        JSON.stringify(payloadForStripe, null, 2)
-      );
 
       const stripeResponse = await fetch('/api/stripe', {
         method: 'POST',
