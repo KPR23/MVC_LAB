@@ -1,6 +1,7 @@
 import { EventModel } from '@/src/models/EventModel';
 import { Mutations } from '@/src/server/db/queries';
 
+//teest
 export async function GET() {
   try {
     const events = await EventModel.getAllEvents();
