@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import { stripe } from '../../utils/stripe';
+import TitleBox from '@/src/components/TitleBox';
 
 export default async function Return({
   searchParams,
@@ -28,11 +29,12 @@ export default async function Return({
   if (status === 'complete') {
     return (
       <section id="success">
-        <p>
-          We appreciate your business! A confirmation email will be sent to{' '}
-          {customerEmail}. If you have any questions, please email{' '}
-        </p>
-        <a href="mailto:orders@example.com">orders@example.com</a>.
+        <TitleBox
+          action="Zakup zakończony"
+          featuredTitle="pomyślnie"
+          description="Na Twój adres email zostały wysłane zakupione bilety."
+          button={false}
+        />
       </section>
     );
   }
