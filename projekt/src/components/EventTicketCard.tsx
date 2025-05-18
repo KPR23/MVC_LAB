@@ -1,6 +1,6 @@
 'use client';
 
-import { Ticket } from 'lucide-react';
+import { Loader2, Ticket } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -118,9 +118,12 @@ export default function EventTicketCard(props: EventTicketCardProps) {
               onClick={handleBuy}
               disabled={loading || priceInPLN === 0}
             >
-              <Ticket className="size-5 text-white" />
+              {!loading && <Ticket className="size-5 text-white" />}
               {loading ? (
-                <span>Przetwarzanie...</span>
+                <>
+                  <Loader2 className="size-5 text-white animate-spin" />
+                  <span>Przetwarzanie...</span>
+                </>
               ) : priceInPLN === 0 ? (
                 <span>To wydarzenie jest darmowe</span>
               ) : cardType === 'pass' ? (
