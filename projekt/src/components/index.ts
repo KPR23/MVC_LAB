@@ -9,3 +9,4 @@ export { default as EventCardSkeleton } from './skeletons/EventCardSkeleton';
 export { default as EventPageSkeleton } from './skeletons/EventPageSkeleton';
 export { default as EventsListPageSkeleton } from './skeletons/EventsListPageSkeleton';
 export { default as TitleBox } from './TitleBox';
+export { default as BookingListPage } from './BookingListPage';

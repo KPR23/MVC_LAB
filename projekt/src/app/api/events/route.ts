@@ -109,6 +109,25 @@ export async function DELETE(request: NextRequest) {
     );
   } catch (error) {
     console.error('Error deleting event:', error);
+
+    const errorMessage = (error as Error).message;
+    if (
+      errorMessage.includes('foreign key constraint') ||
+      errorMessage.includes('violates foreign key') ||
+      errorMessage.includes('referenced from table "bookings"')
+    ) {
+      return new Response(
+        JSON.stringify({
+          error:
+            'Nie można usunąć wydarzenia, które ma dokonane rezerwacje. Najpierw usuń wszystkie rezerwacje.',
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     return new Response(JSON.stringify({ error: 'Failed to delete event' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },

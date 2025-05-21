@@ -1,10 +1,10 @@
-import { Skeleton } from '@/src/components/ui/skeleton';
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbList,
   BreadcrumbSeparator,
 } from '@/src/components/ui/breadcrumb';
+import { Skeleton } from '@/src/components/ui/skeleton';
 
 export default function EventPageSkeleton() {
   return (

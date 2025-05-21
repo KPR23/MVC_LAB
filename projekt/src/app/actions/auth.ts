@@ -1,17 +1,17 @@
 'use server';
 
-import db from '@/src/server/db/drizzle';
-import { users } from '@/src/server/db/schema';
 import {
   createSession,
-  deleteSession,
   decrypt,
+  deleteSession,
 } from '@/src/app/actions/session';
+import db from '@/src/server/db/drizzle';
+import { users } from '@/src/server/db/schema';
 import { FormState, SignupFormSchema } from '@/src/utils/schemas/authSchema';
 import bcrypt from 'bcrypt';
-import { redirect } from 'next/navigation';
 import { eq } from 'drizzle-orm';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 export async function checkSession() {
   const cookieStore = await cookies();

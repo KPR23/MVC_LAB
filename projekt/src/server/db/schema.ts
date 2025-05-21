@@ -1,3 +1,4 @@
+import { relations } from 'drizzle-orm';
 import {
   date,
   integer,
@@ -8,7 +9,6 @@ import {
   timestamp,
   uuid,
 } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),

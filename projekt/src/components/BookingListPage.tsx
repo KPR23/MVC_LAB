@@ -1,36 +1,17 @@
 'use client';
 
 import { Ticket } from 'lucide-react';
-import { createSlug } from '../utils/eventUtils';
 import EventCard from './EventCard';
-
-export type EventData = {
-  id: string;
-  title: string;
-  description: string;
-  organizer: string;
-  category: string;
-  city: string;
-  location: string;
-  imageUrl: string;
-  dateFrom: string;
-  dateTo: string;
-  time: string;
-  capacity: number;
-  availableSeats: number;
-  price: number;
-  createdAt: Date;
-  artistsData?: Array<{ id: string; name: string }>;
-};
+import { EventData } from './EventListPage';
 
 function getSlug(event: EventData) {
   return {
-    category: createSlug(event.category),
-    title: createSlug(event.title),
+    category: event.category.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    title: event.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
   };
 }
 
-export default function EventListPage(props: { events: EventData[] }) {
+export default function BookingListPage(props: { events: EventData[] }) {
   const events = props.events;
 
   const eventsWithSlug = events.map((event) => ({
@@ -50,9 +31,11 @@ export default function EventListPage(props: { events: EventData[] }) {
         <div className="col-span-full row-span-full flex flex-col space-y-2 items-center justify-center h-128 w-full">
           <Ticket size={42} className="text-muted-foreground" />
           <div className="text-center space-y-2">
-            <h2 className="text-lg font-bold">Nie znaleziono wydarzeń</h2>
+            <h2 className="text-lg font-bold">
+              Nie znaleziono żadnych biletów
+            </h2>
             <p className="text-muted-foreground text-md">
-              Obecnie nie ma dostępnych wydarzeń spełniających Twoje kryteria.
+              Obecnie nie masz żadnych zakupionych biletów.
             </p>
           </div>
         </div>

@@ -1,13 +1,17 @@
 import { Calendar, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { DB_EventType } from '../server/db/schema';
-import { createSlug, getEventDateInfo } from '../utils/eventUtils';
+import { getEventDateInfo, createSlug } from '../utils/eventUtils';
 import { Badge } from './ui/badge';
 import { Card, CardContent } from './ui/card';
+import { EventData } from './EventListPage';
+
+interface EventWithSlug extends EventData {
+  getSlug: () => { category: string; title: string };
+}
 
 interface EventCardProps {
-  event: DB_EventType;
+  event: EventWithSlug;
 }
 
 export default function EventCard({ event }: EventCardProps) {
@@ -18,7 +22,8 @@ export default function EventCard({ event }: EventCardProps) {
     capitalizedShortDayName,
   } = getEventDateInfo(event);
 
-  const eventSlug = `${createSlug(event.category)}/${createSlug(event.title)}`;
+  const { category, title } = event.getSlug();
+  const eventSlug = `${category}/${title}`;
 
   return (
     <Link href={`/events/${eventSlug}`}>

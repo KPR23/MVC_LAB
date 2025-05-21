@@ -1,8 +1,8 @@
-import { EventFilter, EventListPage, TitleBox } from '@/src/components';
-import { EventModel } from '@/src/models/EventModel';
+import { EventListPage, TitleBox } from '@/src/components';
+import { EventController } from '@/src/controllers/EventController';
 
 export default async function EventsPage() {
-  const events = await EventModel.getAllEvents();
+  const events = await EventController.getAllEvents();
 
   return (
     <div className="flex flex-col items-center justify-center w-full">
@@ -12,9 +12,9 @@ export default async function EventsPage() {
         description="Odkryj i zakup bilety na nadchodzące wydarzenia"
         button={true}
       />
-      <div className="w-full xl:px-60 2xl:px-80 mb-4">
+      {/* <div className="w-full xl:px-60 2xl:px-80 mb-4">
         <EventFilter />
-      </div>
+      </div> */}
       <div className="w-full xl:px-60 2xl:px-80">
         <EventListPage events={events} />
       </div>

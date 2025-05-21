@@ -25,10 +25,13 @@ import {
   EventFormValues,
 } from '@/src/utils/schemas/eventSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, Trash2 } from 'lucide-react';
+import { ImageIcon, Plus, Trash2 } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { useUploadThing } from '../utils/uploadthing';
 import { DatePickerWithRange } from './ui/datepicker';
 
 const EVENT_CATEGORIES = [
@@ -41,15 +44,54 @@ const EVENT_CATEGORIES = [
 
 export default function EditEventForm(event: EventFormValues) {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>(event.imageUrl || '');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const { startUpload, isUploading: uploadThingIsUploading } = useUploadThing(
+    'imageUploader',
+    {
+      onUploadProgress: (progress) => {
+        setUploadProgress(progress);
+      },
+      onUploadBegin: () => {
+        setIsUploading(true);
+      },
+      onClientUploadComplete: () => {
+        setIsUploading(false);
+        setUploadProgress(100);
+      },
+      onUploadError: (error) => {
+        setIsUploading(false);
+        console.error('Upload error:', error);
+        toast.error('Błąd podczas przesyłania plakatu. Spróbuj ponownie.');
+      },
+    }
+  );
+
+  const formValues = {
+    ...event,
+    price: event.price / 100,
+  };
+
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
-    defaultValues: event,
+    defaultValues: formValues,
   });
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: 'artists',
   });
+
+  const handleFileSelected = (file: File) => {
+    setImageFile(file);
+    const fileUrl = URL.createObjectURL(file);
+    setPreviewUrl(fileUrl);
+    form.clearErrors('imageUrl');
+  };
 
   const defaultValues: EventFormValues = {
     title: event.title,
@@ -61,7 +103,7 @@ export default function EditEventForm(event: EventFormValues) {
     location: event.location,
     capacity: event.capacity,
     imageUrl: event.imageUrl,
-    price: event.price,
+    price: event.price / 100,
     dateFrom: event.dateFrom,
     dateTo: event.dateTo,
     time: event.time,
@@ -76,7 +118,31 @@ export default function EditEventForm(event: EventFormValues) {
         },
         body: JSON.stringify({ id: eventId }),
       });
+
       if (response.ok) {
+        if (event.imageUrl) {
+          try {
+            const urlParts = event.imageUrl.split('/');
+            const fileKey = urlParts[urlParts.length - 1].split('?')[0];
+
+            const imageDeleteResponse = await fetch('/api/uploadthing/delete', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ fileKey }),
+            });
+
+            if (imageDeleteResponse.ok) {
+              console.log('Image file deleted successfully');
+            } else {
+              console.error('Failed to delete image file from storage');
+            }
+          } catch (imageError) {
+            console.error('Error deleting image:', imageError);
+          }
+        }
+
         toast.success('Wydarzenie usunięte pomyślnie');
         router.push('/events');
         return true;
@@ -90,8 +156,39 @@ export default function EditEventForm(event: EventFormValues) {
       return false;
     }
   }
+
   async function onSubmit(values: EventFormValues) {
     try {
+      setLoading(true);
+
+      if (imageFile) {
+        try {
+          setUploadProgress(0);
+          setIsUploading(true);
+
+          const uploadResponse = await startUpload([imageFile]);
+
+          if (uploadResponse && uploadResponse[0]?.url) {
+            values.imageUrl = uploadResponse[0].url;
+            form.setValue('imageUrl', uploadResponse[0].url);
+          } else {
+            throw new Error(
+              'Nie udało się uzyskać adresu URL przesłanego obrazu.'
+            );
+          }
+        } catch (uploadError) {
+          console.error('Upload error:', uploadError);
+          toast.error('Błąd podczas przesyłania plakatu. Spróbuj ponownie.');
+          setLoading(false);
+          setIsUploading(false);
+          return;
+        }
+      }
+
+      if (!values.imageUrl) {
+        values.imageUrl = '';
+      }
+
       const eventInputData = formatEventData(values);
 
       const response = await fetch('/api/events', {
@@ -107,7 +204,7 @@ export default function EditEventForm(event: EventFormValues) {
         throw new Error(errorData.message || 'Failed to add event');
       }
 
-      toast.success('Wydarzenie dodane pomyślnie!');
+      toast.success('Wydarzenie zaktualizowane pomyślnie!');
       form.reset();
       router.refresh();
       router.push('/events');
@@ -118,6 +215,9 @@ export default function EditEventForm(event: EventFormValues) {
           ? error.message
           : 'Failed to submit the form. Please try again.'
       );
+    } finally {
+      setLoading(false);
+      setIsUploading(false);
     }
   }
 
@@ -131,7 +231,13 @@ export default function EditEventForm(event: EventFormValues) {
             append={append}
             remove={remove}
           />
-          <LocationAndDateSection form={form} />
+          <LocationAndDateSection
+            form={form}
+            onFileSelected={handleFileSelected}
+            uploadProgress={uploadProgress}
+            isUploading={isUploading}
+            initialImageUrl={event.imageUrl}
+          />
         </div>
         <div className="flex justify-end gap-4">
           <Button
@@ -145,7 +251,11 @@ export default function EditEventForm(event: EventFormValues) {
           >
             Usuń wydarzenie
           </Button>
-          <Button type="submit">Zaktualizuj wydarzenie</Button>
+          <Button type="submit" disabled={loading || isUploading}>
+            {loading || isUploading
+              ? 'Przetwarzanie...'
+              : 'Zaktualizuj wydarzenie'}
+          </Button>
         </div>
       </form>
     </Form>
@@ -340,9 +450,38 @@ function EventDetailsSection({
 
 function LocationAndDateSection({
   form,
+  onFileSelected,
+  uploadProgress,
+  isUploading,
+  initialImageUrl,
 }: {
   form: ReturnType<typeof useForm<EventFormValues>>;
+  onFileSelected: (file: File) => void;
+  uploadProgress: number;
+  isUploading: boolean;
+  initialImageUrl?: string;
 }) {
+  const [previewUrl, setPreviewUrl] = useState<string>(initialImageUrl || '');
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 4 * 1024 * 1024) {
+        toast.error('Plik jest za duży. Maksymalny rozmiar to 4MB.');
+        return;
+      }
+
+      if (!file.type.startsWith('image/')) {
+        toast.error('Wybierz plik graficzny (JPG, PNG, GIF, itp.)');
+        return;
+      }
+
+      const fileUrl = URL.createObjectURL(file);
+      setPreviewUrl(fileUrl);
+      onFileSelected(file);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <FormField
@@ -393,14 +532,12 @@ function LocationAndDateSection({
                     if (range?.from) {
                       field.onChange(range.from.toISOString().split('T')[0]);
 
-                      // Update dateTo if from is set
                       if (range.to) {
                         form.setValue(
                           'dateTo',
                           range.to.toISOString().split('T')[0]
                         );
                       } else {
-                        // If no end date, set the same as start date
                         form.setValue(
                           'dateTo',
                           range.from.toISOString().split('T')[0]
@@ -459,12 +596,72 @@ function LocationAndDateSection({
         name="imageUrl"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Adres URL plakatu</FormLabel>
+            <FormLabel>Plakat wydarzenia</FormLabel>
             <FormControl>
-              <Textarea placeholder="" className="resize-none" {...field} />
+              <div className="space-y-2">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                  id="image-upload"
+                />
+                <input type="hidden" {...field} />
+                <div className="flex flex-col items-center gap-4">
+                  <label
+                    htmlFor="image-upload"
+                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-md cursor-pointer bg-gray-50 hover:bg-gray-100"
+                  >
+                    {previewUrl ? (
+                      <div className="relative w-full h-full">
+                        <Image
+                          src={previewUrl}
+                          alt="Podgląd plakatu"
+                          fill
+                          className="object-contain"
+                        />
+                        {isUploading && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                            <div className="text-white text-center">
+                              <div className="mb-2">
+                                Przesyłanie... {uploadProgress}%
+                              </div>
+                              <div className="w-32 bg-gray-200 rounded-full h-2">
+                                <div
+                                  className="bg-blue-600 h-2 rounded-full"
+                                  style={{ width: `${uploadProgress}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : field.value ? (
+                      <div className="relative w-full h-full">
+                        <Image
+                          src={field.value}
+                          alt="Plakat wydarzenia"
+                          fill
+                          className="object-contain"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center gap-1">
+                        <ImageIcon className="h-10 w-10 text-gray-400" />
+                        <p className="text-sm text-gray-500">
+                          Kliknij, aby dodać plakat wydarzenia
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          (max 4MB, formaty: JPG, PNG)
+                        </p>
+                      </div>
+                    )}
+                  </label>
+                </div>
+              </div>
             </FormControl>
             <FormDescription>
-              Link do plakatu promującego wydarzenie.
+              Dodaj plakat promujący wydarzenie.
             </FormDescription>
             <FormMessage />
           </FormItem>

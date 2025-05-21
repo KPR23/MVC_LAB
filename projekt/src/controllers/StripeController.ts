@@ -1,11 +1,11 @@
 'use server';
 
-import { headers } from 'next/headers';
-import { stripe } from '../utils/stripe';
 import { verifySession } from '@/src/server/db/dal';
 import db from '@/src/server/db/drizzle';
 import { users } from '@/src/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { headers } from 'next/headers';
+import { stripe } from '../utils/stripe';
 
 export async function fetchClientSecret(priceId?: string) {
   const origin = (await headers()).get('origin');

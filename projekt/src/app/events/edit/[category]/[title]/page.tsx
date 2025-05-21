@@ -20,8 +20,10 @@ export default async function EditEventPage(props: {
   if (event) {
     const formattedEvent = {
       ...event,
-      category: event.category,
-      artists: event.artistsData,
+      artists: (event.artistsData || []).map((artist) => ({
+        name: artist.name,
+        id: artist.id,
+      })),
     };
 
     return (

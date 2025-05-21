@@ -20,7 +20,10 @@ export const eventFormSchema = z.object({
   dateTo: z.string().min(1, 'Data jest wymagana'),
   time: z.string().min(1, 'Czas jest wymagany'),
   capacity: z.coerce.number().min(1, 'Pojemność musi być większa niż 0'),
-  imageUrl: z.string().url('Niepoprawny adres URL'),
+  imageUrl: z
+    .string()
+    .url('Niepoprawny adres URL')
+    .or(z.string().length(0).optional()),
   price: z.coerce.number().min(0, 'Cena musi być większa lub równa 0'),
 });
 

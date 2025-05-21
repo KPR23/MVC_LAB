@@ -1,6 +1,6 @@
-import { EventListPage, TitleBox } from '@/src/components';
+import { BookingListPage, TitleBox } from '@/src/components';
+import { BookingController } from '@/src/controllers/BookingController';
 import { verifySession } from '@/src/server/db/dal';
-import { Queries } from '@/src/server/db/queries';
 import { redirect } from 'next/navigation';
 
 export default async function TicketsPage() {
@@ -9,7 +9,9 @@ export default async function TicketsPage() {
     redirect('/login');
   }
 
-  const userBookings = await Queries.getUserBookings(session.userId);
+  const { events } = await BookingController.getUserBookingsWithEventModels(
+    session.userId
+  );
 
   return (
     <div className="flex flex-col gap-4">
@@ -20,7 +22,7 @@ export default async function TicketsPage() {
         button={false}
       />
       <div className="w-full xl:px-60 2xl:px-80">
-        <EventListPage events={userBookings.map((booking) => booking.event)} />
+        <BookingListPage events={events} />
       </div>
     </div>
   );

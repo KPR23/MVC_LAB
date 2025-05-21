@@ -1,7 +1,7 @@
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from './ui/button';
 import { ReactNode } from 'react';
+import { Button } from './ui/button';
 
 export default function TitleBox({
   action,

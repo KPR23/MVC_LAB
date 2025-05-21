@@ -6,8 +6,8 @@ import { users } from '@/src/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { cache } from 'react';
 import { NextRequest } from 'next/server';
+import { cache } from 'react';
 
 type Session = {
   isAuth: boolean;
