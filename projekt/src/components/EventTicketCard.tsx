@@ -4,6 +4,7 @@ import { Loader2, Ticket } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { checkSession } from '../app/actions/auth';
 import { DB_EventType } from '../server/db/schema';
 import { getEventDateInfo } from '../utils/eventUtils';
 import { Button } from './ui/button';
@@ -30,6 +31,17 @@ export default function EventTicketCard(props: EventTicketCardProps) {
   } = getEventDateInfo(event);
 
   const handleBuy = async () => {
+    const session = await checkSession();
+    if (!session) {
+      toast.error('Musisz być zalogowany, aby kupić bilety.', {
+        action: {
+          label: 'Zaloguj się',
+          onClick: () => router.push('/login'),
+        },
+      });
+      return;
+    }
+
     try {
       setLoading(true);
       const response = await fetch(`/api/stripe?eventId=${event.id}`, {
@@ -37,9 +49,15 @@ export default function EventTicketCard(props: EventTicketCardProps) {
       });
 
       if (!response.ok) {
-        toast.error(
-          'Wystąpił błąd podczas przetwarzania zakupu. Spróbuj ponownie później.'
-        );
+        const data = await response.json();
+        toast.error(data.error, {
+          action: {
+            label: 'Twoje bilety ↗',
+            onClick: () => router.push('/bookings'),
+          },
+        });
+
+        return;
       }
 
       const data = await response.json();

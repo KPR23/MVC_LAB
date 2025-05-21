@@ -24,7 +24,7 @@ export default function BookingListPage(props: { events: EventData[] }) {
       {eventsWithSlug.length > 0 ? (
         eventsWithSlug.map((event) => (
           <div key={event.id} className="w-full max-w-[290px] flex-shrink-0">
-            <EventCard event={event} />
+            <EventCard event={event} link="bookings" />
           </div>
         ))
       ) : (

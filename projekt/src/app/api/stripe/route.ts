@@ -1,3 +1,4 @@
+import { BookingController } from '@/src/controllers/BookingController';
 import { verifyApiSession } from '@/src/server/db/dal';
 import { getEventDateInfo } from '@/src/utils/eventUtils';
 import { stripe } from '@/src/utils/stripe';
@@ -11,6 +12,7 @@ export async function GET(request: NextRequest) {
       headers: { 'Content-Type': 'application/json' },
     });
   }
+
   const searchParams = request.nextUrl.searchParams;
   const eventId = searchParams.get('eventId');
 
@@ -45,6 +47,25 @@ export async function GET(request: NextRequest) {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       });
+    }
+
+    const { events } = await BookingController.getUserBookingsWithEventModels(
+      session.userId as string
+    );
+    console.log(session.userId);
+
+    const userBookedEvent = events.some((e) => e.id === eventId);
+
+    if (userBookedEvent) {
+      return new Response(
+        JSON.stringify({
+          error: 'Nie możesz ponownie kupić biletu na to wydarzenie.',
+        }),
+        {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
     const ticketPriceId = ticketPrices.data[0].id;
 

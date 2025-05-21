@@ -1,4 +1,13 @@
-import { EventTicketCard } from '@/src/components';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer';
 import { Badge } from '@/src/components/ui/badge';
 import {
   Breadcrumb,
@@ -9,12 +18,14 @@ import {
   BreadcrumbSeparator,
 } from '@/src/components/ui/breadcrumb';
 import { Button } from '@/src/components/ui/button';
+import { Card } from '@/src/components/ui/card';
 import { EventModel } from '@/src/models/EventModel';
 import { createSlug, getEventDateInfo } from '@/src/utils/eventUtils';
 import { Calendar, MapPin, Ticket } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import QRCode from 'react-qr-code';
 
 export default async function EventPage(props: {
   params: Promise<{ category: string; title: string }>;
@@ -31,23 +42,14 @@ export default async function EventPage(props: {
 
   const eventSlug = `${createSlug(event.category)}/${createSlug(event.title)}`;
 
-  const {
-    passPriceInPLN,
-    eventDates,
-    fullMonthWithoutYear,
-    fullMonthWithYear,
-  } = getEventDateInfo(event);
+  const { fullMonthWithoutYear, fullMonthWithYear } = getEventDateInfo(event);
 
   return (
     <div className="xl:px-50 2xl:px-80 py-6">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/events">Wydarzenia</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/events">{event.category}</BreadcrumbLink>
+            <BreadcrumbLink href="/bookings">Twoje bilety</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
@@ -57,12 +59,50 @@ export default async function EventPage(props: {
       </Breadcrumb>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 my-6">
         <h1 className="text-5xl font-bold">{event.title}</h1>
-        <Link href="#tickets">
-          <Button size="xl" className="font-bold">
-            <Ticket className="size-5" />
-            Sprawdź bilety
-          </Button>
-        </Link>
+        <Drawer>
+          <DrawerTrigger asChild>
+            <Button size="xl" className="font-bold">
+              <Ticket className="size-5" />
+              Wyświetl swój bilet
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent>
+            <div className="mx-auto w-full max-w-lg">
+              <DrawerHeader>
+                <DrawerTitle>
+                  Twój bilet na wydarzenie - {event.title}
+                </DrawerTitle>
+                <DrawerDescription>
+                  Nie ma potrzeby drukowania biletu, wystarczy go wyświetlić na
+                  ekranie.
+                </DrawerDescription>
+              </DrawerHeader>
+              <div className="p-4 pb-0">
+                <div className="flex flex-col items-center justify-center space-y-4">
+                  <Card className="p-4 bg-white">
+                    <QRCode
+                      value={`${
+                        process.env.NEXT_PUBLIC_APP_URL ||
+                        'http://localhost:3000'
+                      }/ticket/${event.id}`}
+                      size={250}
+                      className="mx-auto"
+                    />
+                  </Card>
+                  <div className="text-center text-sm text-muted-foreground">
+                    <p>Kod biletu: {event.id.substring(0, 8).toUpperCase()}</p>
+                    <p>Data zakupu: {new Date().toLocaleDateString('pl-PL')}</p>
+                  </div>
+                </div>
+              </div>
+              <DrawerFooter>
+                <DrawerClose asChild>
+                  <Button variant="outline">Zamknij</Button>
+                </DrawerClose>
+              </DrawerFooter>
+            </div>
+          </DrawerContent>
+        </Drawer>
       </div>
       <div className="flex flex-wrap gap-4 mb-8">
         <Badge className="rounded-full">{event.category}</Badge>
@@ -118,54 +158,6 @@ export default async function EventPage(props: {
         </div>
 
         <div className="flex-1 space-y-8 mt-6 lg:mt-0">
-          <section id="tickets">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-3xl font-bold">Bilety</h2>
-            </div>
-
-            <h3 className="text-2xl font-bold mb-6">
-              {event.dateFrom === event.dateTo ? event.city : 'Karnety'}
-            </h3>
-
-            {event.dateFrom !== event.dateTo ? (
-              <>
-                <div className="mb-8">
-                  <EventTicketCard
-                    {...event}
-                    cardType="pass"
-                    dateFrom={event.dateFrom}
-                    dateTo={event.dateTo}
-                    title={`${event.title} - Karnet`}
-                    price={passPriceInPLN}
-                  />
-                </div>
-                <div className="space-y-6">
-                  <h3 className="text-2xl font-bold mb-6">
-                    Bilety jednodniowe
-                  </h3>
-                  {eventDates.map((date) => {
-                    const dayName = date.toLocaleDateString('pl-PL', {
-                      weekday: 'long',
-                    });
-                    return (
-                      <div className="mb-6" key={date.toISOString()}>
-                        <EventTicketCard
-                          {...event}
-                          cardType="ticket"
-                          dateFrom={date.toISOString()}
-                          dateTo={date.toISOString()}
-                          title={`${event.title} - ${dayName}`}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
-            ) : (
-              <EventTicketCard {...event} cardType="ticket" />
-            )}
-          </section>
-
           <section id="event-info">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-3xl font-bold">O wydarzeniu</h2>

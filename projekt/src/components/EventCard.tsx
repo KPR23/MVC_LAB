@@ -12,9 +12,10 @@ interface EventWithSlug extends EventData {
 
 interface EventCardProps {
   event: EventWithSlug;
+  link: string;
 }
 
-export default function EventCard({ event }: EventCardProps) {
+export default function EventCard({ event, link }: EventCardProps) {
   const {
     shortMonthWithoutYear,
     shortMonthWithYear,
@@ -26,7 +27,7 @@ export default function EventCard({ event }: EventCardProps) {
   const eventSlug = `${category}/${title}`;
 
   return (
-    <Link href={`/events/${eventSlug}`}>
+    <Link href={`/${link}/${eventSlug}`}>
       <Card className="overflow-hidden hover:scale-105 transition-all h-full pb-6">
         <div className="relative overflow-hidden aspect-[3/4] ">
           <Image
