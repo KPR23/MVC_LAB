@@ -1,8 +1,16 @@
+import { verifyApiSession } from '@/src/server/db/dal';
 import { getEventDateInfo } from '@/src/utils/eventUtils';
 import { stripe } from '@/src/utils/stripe';
 import { NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
+  const session = await verifyApiSession(request);
+  if (!session) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
   const searchParams = request.nextUrl.searchParams;
   const eventId = searchParams.get('eventId');
 
@@ -79,6 +87,13 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const session = await verifyApiSession(request);
+  if (!session) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
   try {
     const body = await request.json();
     const searchParams = request.nextUrl.searchParams;

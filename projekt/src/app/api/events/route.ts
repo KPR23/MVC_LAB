@@ -1,7 +1,16 @@
 import { EventModel } from '@/src/models/EventModel';
+import { verifyApiSession } from '@/src/server/db/dal';
 import { Mutations } from '@/src/server/db/queries';
+import { NextRequest } from 'next/server';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const session = await verifyApiSession(request);
+  if (!session) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
   try {
     const events = await EventModel.getAllEvents();
     return new Response(
@@ -20,9 +29,16 @@ export async function GET() {
   }
 }
 
-export async function POST(NextRequest: Request) {
+export async function POST(request: NextRequest) {
+  const session = await verifyApiSession(request);
+  if (!session) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
   try {
-    const eventData = await NextRequest.json();
+    const eventData = await request.json();
     const event = await Mutations.createEvent({
       event: eventData,
     });
@@ -42,9 +58,16 @@ export async function POST(NextRequest: Request) {
   }
 }
 
-export async function PUT(NextRequest: Request) {
+export async function PUT(request: NextRequest) {
+  const session = await verifyApiSession(request);
+  if (!session) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
   try {
-    const eventData = await NextRequest.json();
+    const eventData = await request.json();
     const event = await Mutations.updateEvent({
       event: eventData,
     });
@@ -64,9 +87,16 @@ export async function PUT(NextRequest: Request) {
   }
 }
 
-export async function DELETE(NextRequest: Request) {
+export async function DELETE(request: NextRequest) {
+  const session = await verifyApiSession(request);
+  if (!session) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
   try {
-    const eventData = await NextRequest.json();
+    const eventData = await request.json();
     const event = await Mutations.deleteEvent({
       event: eventData,
     });
