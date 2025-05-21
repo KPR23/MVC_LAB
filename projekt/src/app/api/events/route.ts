@@ -110,7 +110,6 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     console.error('Error deleting event:', error);
 
-    // Check for foreign key constraint violation
     const errorMessage = (error as Error).message;
     if (
       errorMessage.includes('foreign key constraint') ||

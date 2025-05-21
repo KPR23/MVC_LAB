@@ -37,7 +37,6 @@ export class EventModel {
     this.createdAt = eventData.createdAt;
   }
 
-  // Static methods for data retrieval
   static async getAllEvents() {
     const events = await Queries.getEvents();
 
@@ -69,7 +68,6 @@ export class EventModel {
     return eventModel;
   }
 
-  // Generate slug for URL
   getSlug() {
     const categorySlug = this.category
       .toLowerCase()
@@ -78,9 +76,7 @@ export class EventModel {
     return { category: categorySlug, title: titleSlug };
   }
 
-  // Convert plain objects to EventModel instances
   static fromPlainObject(obj: any): EventModel {
-    // Create a minimal DB_EventType-like object
     const eventData = {
       id: obj.id,
       title: obj.title,

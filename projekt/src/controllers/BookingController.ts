@@ -28,7 +28,25 @@ export class BookingController {
     try {
       const bookings = await Queries.getUserBookings(userId);
       const events = bookings.map((booking) => {
-        return EventModel.fromPlainObject(booking.event);
+        const eventModel = EventModel.fromPlainObject(booking.event);
+        return {
+          id: eventModel.id,
+          title: eventModel.title,
+          description: eventModel.description,
+          organizer: eventModel.organizer,
+          category: eventModel.category,
+          city: eventModel.city,
+          location: eventModel.location,
+          imageUrl: eventModel.imageUrl,
+          dateFrom: eventModel.dateFrom,
+          dateTo: eventModel.dateTo,
+          time: eventModel.time,
+          capacity: eventModel.capacity,
+          availableSeats: eventModel.availableSeats,
+          price: eventModel.price,
+          createdAt: eventModel.createdAt,
+          artistsData: eventModel.artistsData,
+        };
       });
       return { success: true, events };
     } catch (error) {

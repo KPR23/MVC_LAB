@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import Image from 'next/image';
 import { ImageIcon, Plus, Trash2 } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { Button } from '@/src/components/ui/button';
@@ -32,8 +32,8 @@ import {
   eventFormSchema,
   EventFormValues,
 } from '@/src/utils/schemas/eventSchema';
-import { DatePickerWithRange } from './ui/datepicker';
 import { useUploadThing } from '../utils/uploadthing';
+import { DatePickerWithRange } from './ui/datepicker';
 
 const EVENT_CATEGORIES = [
   { id: 'Muzyka', label: 'Muzyka' },
@@ -102,7 +102,6 @@ export default function AddEventForm() {
     setImageFile(file);
     const fileUrl = URL.createObjectURL(file);
     setPreviewUrl(fileUrl);
-    // Clear any existing image URL errors when a file is selected
     form.clearErrors('imageUrl');
   };
 
@@ -112,7 +111,6 @@ export default function AddEventForm() {
 
       if (imageFile) {
         try {
-          // Reset progress before starting upload
           setUploadProgress(0);
           setIsUploading(true);
 
@@ -445,13 +443,11 @@ function LocationAndDateSection({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Check file size (max 4MB)
       if (file.size > 4 * 1024 * 1024) {
         toast.error('Plik jest za duży. Maksymalny rozmiar to 4MB.');
         return;
       }
 
-      // Check file type
       if (!file.type.startsWith('image/')) {
         toast.error('Wybierz plik graficzny (JPG, PNG, GIF, itp.)');
         return;

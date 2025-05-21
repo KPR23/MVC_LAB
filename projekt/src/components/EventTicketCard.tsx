@@ -8,6 +8,7 @@ import { DB_EventType } from '../server/db/schema';
 import { getEventDateInfo } from '../utils/eventUtils';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
+
 type EventTicketCardProps = DB_EventType & {
   cardType: 'ticket' | 'pass';
 };
@@ -26,8 +27,6 @@ export default function EventTicketCard(props: EventTicketCardProps) {
     fullMonthWithYear,
     shortDayName,
     shortDayNameTo,
-    passPriceInPLN,
-    eventDates,
   } = getEventDateInfo(event);
 
   const handleBuy = async () => {
@@ -50,7 +49,7 @@ export default function EventTicketCard(props: EventTicketCardProps) {
           if (data.priceId) {
             router.push(`/events/pay?priceId=${data.priceId}`);
           } else {
-            toast.error('Bilety nie są jeszcze dostępne dla tego wydarzenia.');
+            toast.error('Bilety dla tego wydarzenia nie są jeszcze dostępne.');
           }
         } else if (cardType === 'pass') {
           if (data.passPriceId) {
@@ -60,7 +59,7 @@ export default function EventTicketCard(props: EventTicketCardProps) {
           }
         }
       } else {
-        toast.error('Bilety nie są jeszcze dostępne dla tego wydarzenia.');
+        toast.error('Bilety dla tego wydarzenia nie są jeszcze dostępne.');
       }
     } catch (error) {
       console.error('Error buying ticket:', error);

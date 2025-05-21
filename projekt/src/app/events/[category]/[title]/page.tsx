@@ -45,7 +45,9 @@ export default async function EventPage(props: {
     if (response.ok) {
       toast.success('Wydarzenie usunięte pomyślnie');
     } else {
-      toast.error('Nie udało się usunąć wydarzenia');
+      toast.error('Nie udało się usunąć wydarzenia', {
+        description: 'Spróbuj ponownie później',
+      });
     }
   }
   return (
