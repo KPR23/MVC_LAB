@@ -51,20 +51,16 @@ export default function EventTicketCard(props: EventTicketCardProps) {
           if (data.priceId) {
             router.push(`/events/pay?priceId=${data.priceId}`);
           } else {
-            throw new Error('Single ticket price ID not found for this event.');
+            toast.error('Bilety nie są jeszcze dostępne dla tego wydarzenia.');
           }
         } else if (cardType === 'pass') {
           if (data.passPriceId) {
             router.push(`/events/pay?priceId=${data.passPriceId}`);
           } else {
-            console.warn('Pass product ID not found for this event.');
             toast.error('Karnet nie jest dostępny dla tego wydarzenia.');
           }
         }
       } else {
-        console.error(
-          'No Stripe product found for this event. Ensure products are created.'
-        );
         toast.error('Bilety nie są jeszcze dostępne dla tego wydarzenia.');
       }
     } catch (error) {

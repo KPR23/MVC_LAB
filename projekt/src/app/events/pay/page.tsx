@@ -1,17 +1,9 @@
 'use client';
 
 import Checkout from '@/src/components/StripeCheckout';
-import { verifySession } from '@/src/server/db/dal';
-import { redirect, useSearchParams } from 'next/navigation';
-import { toast } from 'sonner';
+import { useSearchParams } from 'next/navigation';
 
-export default async function Page() {
-  const session = await verifySession();
-  if (!session) {
-    toast.error('Zaloguj się, aby kontynuować.');
-    redirect('/login');
-  }
-
+export default function Page() {
   const searchParams = useSearchParams();
   const priceId = searchParams.get('priceId');
 

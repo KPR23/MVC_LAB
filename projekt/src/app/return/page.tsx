@@ -1,7 +1,10 @@
 import { redirect } from 'next/navigation';
-
 import { stripe } from '../../utils/stripe';
 import TitleBox from '@/src/components/TitleBox';
+import Link from 'next/link';
+import { verifySession } from '@/src/server/db/dal';
+import { Queries } from '@/src/server/db/queries';
+import { Stripe } from 'stripe';
 
 export default async function Return({
   searchParams,
@@ -9,16 +12,25 @@ export default async function Return({
   searchParams: { session_id: string };
 }) {
   const { session_id } = await searchParams;
+  const session = await verifySession();
 
   if (!session_id)
     throw new Error('Please provide a valid session_id (`cs_test_...`)');
 
-  const { status, customer_details } = await stripe.checkout.sessions.retrieve(
+  const { status, customer_details, line_items } =
+    await stripe.checkout.sessions.retrieve(session_id, {
+      expand: ['line_items', 'line_items.data.price.product', 'payment_intent'],
+    });
+
+  console.log('Stripe session details:', {
+    status,
     session_id,
-    {
-      expand: ['line_items', 'payment_intent'],
-    }
-  );
+    line_items: line_items?.data.map((item) => ({
+      price: item.price,
+      product: item.price?.product,
+      metadata: (item.price?.product as Stripe.Product)?.metadata,
+    })),
+  });
 
   const customerEmail = customer_details?.email;
 
@@ -26,13 +38,41 @@ export default async function Return({
     return redirect('/');
   }
 
-  if (status === 'complete') {
+  if (status === 'complete' && session?.userId) {
+    const product = line_items?.data[0]?.price?.product as Stripe.Product;
+    const eventId = product?.metadata?.eventId;
+
+    console.log('Product details:', {
+      productId: product?.id,
+      metadata: product?.metadata,
+      eventId,
+    });
+
+    if (eventId) {
+      try {
+        await Queries.createBooking(session.userId, eventId, session_id);
+        console.log('Booking created successfully');
+      } catch (error) {
+        console.error('Failed to create booking:', error);
+      }
+    } else {
+      console.error('No eventId found in product metadata');
+    }
+
     return (
       <section id="success">
         <TitleBox
           action="Zakup zakończony"
           featuredTitle="pomyślnie"
-          description="Na Twój adres email zostały wysłane zakupione bilety."
+          description={
+            <>
+              Zakupione bilety możesz zobaczyć w zakładce{' '}
+              <Link href="/bookings" className="underline">
+                Moje bilety
+              </Link>
+              .
+            </>
+          }
           button={false}
         />
       </section>

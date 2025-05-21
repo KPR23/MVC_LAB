@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from './ui/button';
+import { ReactNode } from 'react';
 
 export default function TitleBox({
   action,
@@ -10,7 +11,7 @@ export default function TitleBox({
 }: {
   action: string;
   featuredTitle: string;
-  description: string;
+  description: string | ReactNode;
   button: boolean;
 }) {
   return (

@@ -2,12 +2,13 @@ import {
   date,
   integer,
   pgTable,
+  primaryKey,
   text,
   time,
   timestamp,
   uuid,
-  primaryKey,
 } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -59,14 +60,26 @@ export const eventArtists = pgTable(
 
 export const bookings = pgTable('bookings', {
   id: uuid('id').primaryKey().defaultRandom(),
-  eventId: uuid('event_id')
-    .notNull()
-    .references(() => events.id, { onDelete: 'cascade' }),
   userId: uuid('user_id')
     .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
+    .references(() => users.id),
+  eventId: uuid('event_id')
+    .notNull()
+    .references(() => events.id),
+  stripeSessionId: text('stripe_session_id').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+export const bookingsRelations = relations(bookings, ({ one }) => ({
+  user: one(users, {
+    fields: [bookings.userId],
+    references: [users.id],
+  }),
+  event: one(events, {
+    fields: [bookings.eventId],
+    references: [events.id],
+  }),
+}));
 
 export type DB_EventType = typeof events.$inferSelect;
 export type DB_ArtistType = typeof artists.$inferSelect;

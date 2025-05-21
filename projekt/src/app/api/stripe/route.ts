@@ -142,13 +142,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('Creating Stripe product with data:', {
+      title: eventData.title,
+      eventId: eventData.id,
+      metadata: {
+        type: `ticket_${eventData.id}`,
+        eventId: eventData.id,
+      },
+    });
+
     const product = await stripe.products.create({
       name: `${eventData.title}`,
       description: `Bilet na wydarzenie ${eventData.title} - jednodniowy`,
       images: [eventData.imageUrl],
       metadata: {
         type: `ticket_${eventData.id}`,
+        eventId: eventData.id,
       },
+    });
+
+    console.log('Created Stripe product:', {
+      id: product.id,
+      name: product.name,
+      metadata: product.metadata,
     });
 
     const price = await stripe.prices.create({
@@ -169,6 +185,7 @@ export async function POST(request: NextRequest) {
           images: [eventData.imageUrl],
           metadata: {
             type: `pass_${eventData.id}`,
+            eventId: eventData.id,
           },
         });
 

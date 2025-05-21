@@ -2,7 +2,7 @@ import 'server-only';
 
 import { eq } from 'drizzle-orm';
 import db from './drizzle';
-import { artists, eventArtists, events } from './schema';
+import { artists, eventArtists, events, bookings } from './schema';
 
 export const Queries = {
   getEvents: function () {
@@ -11,6 +11,7 @@ export const Queries = {
   getEventbyId: function (id: string) {
     return db.select().from(events).where(eq(events.id, id));
   },
+
   getEventbyTitle: function (title: string) {
     return db
       .select()
@@ -26,6 +27,26 @@ export const Queries = {
       .from(artists)
       .innerJoin(eventArtists, eq(eventArtists.artistId, artists.id))
       .where(eq(eventArtists.eventId, eventId));
+  },
+
+  async createBooking(
+    userId: string,
+    eventId: string,
+    stripeSessionId: string
+  ) {
+    return db.insert(bookings).values({
+      userId,
+      eventId,
+      stripeSessionId,
+    });
+  },
+  async getUserBookings(userId: string) {
+    return db.query.bookings.findMany({
+      where: eq(bookings.userId, userId),
+      with: {
+        event: true,
+      },
+    });
   },
 };
 
