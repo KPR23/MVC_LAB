@@ -84,7 +84,6 @@ export default function EditEventForm(event: EventFormValues) {
 
   const handleFileSelected = (file: File) => {
     setImageFile(file);
-    const fileUrl = URL.createObjectURL(file);
     form.clearErrors('imageUrl');
   };
 
@@ -440,8 +439,6 @@ function LocationAndDateSection({
   isUploading: boolean;
   initialImageUrl?: string;
 }) {
-  const [previewUrl, setPreviewUrl] = useState<string>(initialImageUrl || '');
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -589,10 +586,10 @@ function LocationAndDateSection({
                     htmlFor="image-upload"
                     className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-md cursor-pointer bg-gray-50 hover:bg-gray-100"
                   >
-                    {previewUrl ? (
+                    {field.value ? (
                       <div className="relative w-full h-full">
                         <Image
-                          src={previewUrl}
+                          src={field.value}
                           alt="Podgląd plakatu"
                           fill
                           className="object-contain"
