@@ -270,7 +270,7 @@ MultiSelectorTrigger.displayName = 'MultiSelectorTrigger';
 const MultiSelectorInput = forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
->(({ className, ...props }, ref) => {
+>(({ className, ...props }) => {
   const {
     setOpen,
     inputValue,
@@ -344,7 +344,7 @@ const MultiSelectorItem = forwardRef<
   { value: string } & React.ComponentPropsWithoutRef<
     typeof CommandPrimitive.Item
   >
->(({ className, value, children, ...props }, ref) => {
+>(({ className, value, children, ...props }, _ref) => {
   const { value: Options, onValueChange, setInputValue } = useMultiSelect();
 
   const mousePreventDefault = useCallback((e: React.MouseEvent) => {
@@ -355,7 +355,7 @@ const MultiSelectorItem = forwardRef<
   const isIncluded = Options.includes(value);
   return (
     <CommandItem
-      ref={ref}
+      ref={_ref}
       {...props}
       onSelect={() => {
         onValueChange(value);

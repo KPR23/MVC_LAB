@@ -2,7 +2,7 @@ import 'server-only';
 
 import { eq } from 'drizzle-orm';
 import db from './drizzle';
-import { events, artists, eventArtists } from './schema';
+import { artists, bookings, eventArtists, events } from './schema';
 
 export const Queries = {
   getEvents: function () {
@@ -11,6 +11,7 @@ export const Queries = {
   getEventbyId: function (id: string) {
     return db.select().from(events).where(eq(events.id, id));
   },
+
   getEventbyTitle: function (title: string) {
     return db
       .select()
@@ -26,6 +27,26 @@ export const Queries = {
       .from(artists)
       .innerJoin(eventArtists, eq(eventArtists.artistId, artists.id))
       .where(eq(eventArtists.eventId, eventId));
+  },
+
+  async createBooking(
+    userId: string,
+    eventId: string,
+    stripeSessionId: string
+  ) {
+    return db.insert(bookings).values({
+      userId,
+      eventId,
+      stripeSessionId,
+    });
+  },
+  async getUserBookings(userId: string) {
+    return db.query.bookings.findMany({
+      where: eq(bookings.userId, userId),
+      with: {
+        event: true,
+      },
+    });
   },
 };
 
@@ -146,7 +167,6 @@ export const Mutations = {
         throw new Error('Event ID is required for update');
       }
 
-      // Update event basic info
       await db
         .update(events)
         .set({
@@ -166,16 +186,13 @@ export const Mutations = {
         })
         .where(eq(events.id, input.event.id));
 
-      // Delete existing artist relationships for this event
       await db
         .delete(eventArtists)
         .where(eq(eventArtists.eventId, input.event.id));
 
-      // Add updated artist relationships
       for (const artist of input.event.artists) {
         let artistId;
 
-        // Check if artist exists by name
         const existingArtistByName = await db
           .select({ id: artists.id })
           .from(artists)
@@ -184,7 +201,6 @@ export const Mutations = {
         if (existingArtistByName.length > 0) {
           artistId = existingArtistByName[0].id;
         } else if (artist.id) {
-          // Check if artist exists by ID
           const existingArtistById = await db
             .select({ id: artists.id })
             .from(artists)
@@ -193,7 +209,6 @@ export const Mutations = {
           if (existingArtistById.length > 0) {
             artistId = existingArtistById[0].id;
           } else {
-            // Create new artist with provided ID
             const newArtist = await db
               .insert(artists)
               .values({
@@ -204,7 +219,6 @@ export const Mutations = {
             artistId = newArtist[0].id;
           }
         } else {
-          // Create new artist with generated ID
           const newArtist = await db
             .insert(artists)
             .values({
@@ -214,7 +228,6 @@ export const Mutations = {
           artistId = newArtist[0].id;
         }
 
-        // Create relationship between event and artist
         await db.insert(eventArtists).values({
           eventId: input.event.id,
           artistId: artistId,
@@ -229,6 +242,20 @@ export const Mutations = {
     }
   },
   deleteEvent: async function (input: { event: { id: string } }) {
-    await db.delete(events).where(eq(events.id, input.event.id));
+    try {
+      const existingBookings = await db.query.bookings.findMany({
+        where: eq(bookings.eventId, input.event.id),
+      });
+
+      if (existingBookings.length > 0) {
+        await db.delete(bookings).where(eq(bookings.eventId, input.event.id));
+      }
+
+      await db.delete(events).where(eq(events.id, input.event.id));
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      throw new Error(`Failed to delete event: ${(error as Error).message}`);
+    }
   },
 };

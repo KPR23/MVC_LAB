@@ -1,10 +1,16 @@
 import { TitleBox } from '@/src/components';
 import EditEventForm from '@/src/components/EditEventForm';
 import { EventModel } from '@/src/models/EventModel';
+import { verifySession } from '@/src/server/db/dal';
+import { redirect } from 'next/navigation';
 
 export default async function EditEventPage(props: {
   params: Promise<{ category: string; title: string }>;
 }) {
+  const session = await verifySession();
+  if (!session) {
+    redirect('/login');
+  }
   const { category, title } = await props.params;
   const event = await EventModel.getEventBySlug(
     decodeURIComponent(category),
@@ -14,8 +20,10 @@ export default async function EditEventPage(props: {
   if (event) {
     const formattedEvent = {
       ...event,
-      category: event.category,
-      artists: event.artistsData,
+      artists: (event.artistsData || []).map((artist) => ({
+        name: artist.name,
+        id: artist.id,
+      })),
     };
 
     return (

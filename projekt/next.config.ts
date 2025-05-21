@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { hostname: 'res.cloudinary.com' },
       { hostname: 'www.ebilet.pl' },
+      { hostname: 'utfs.io' },
+      { hostname: 'images.pexels.com' },
     ],
   },
   eslint: {

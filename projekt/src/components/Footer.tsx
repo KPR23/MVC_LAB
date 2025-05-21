@@ -1,4 +1,4 @@
-import Link from 'next/link'; // Zakładam, że używasz Next.js, jeśli nie, użyj <a>
+import Link from 'next/link';
 
 export default function Footer() {
   return (

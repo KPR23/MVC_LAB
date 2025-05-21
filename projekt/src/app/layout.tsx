@@ -1,7 +1,10 @@
 import { Toaster } from '@/src/components/ui/sonner';
+import { NextSSRPlugin } from '@uploadthing/react/next-ssr-plugin';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import { extractRouterConfig } from 'uploadthing/server';
 import { Footer, NavBar } from '../components';
+import { ourFileRouter } from './api/uploadthing/core';
 import './globals.css';
 
 const geistSans = Geist({
@@ -22,7 +25,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -32,10 +35,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
       >
+        <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
         <NavBar />
         <main className="flex-1">{children}</main>
         <Toaster />
-        <Footer />
+        <div className="sticky top-0">
+          <Footer />
+        </div>
       </body>
     </html>
   );

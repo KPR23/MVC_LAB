@@ -1,13 +1,15 @@
 'use client';
 
-import { Ticket } from 'lucide-react';
+import { Loader2, Ticket } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { checkSession } from '../app/actions/auth';
 import { DB_EventType } from '../server/db/schema';
 import { getEventDateInfo } from '../utils/eventUtils';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
+
 type EventTicketCardProps = DB_EventType & {
   cardType: 'ticket' | 'pass';
 };
@@ -26,11 +28,20 @@ export default function EventTicketCard(props: EventTicketCardProps) {
     fullMonthWithYear,
     shortDayName,
     shortDayNameTo,
-    passPriceInPLN,
-    eventDates,
   } = getEventDateInfo(event);
 
   const handleBuy = async () => {
+    const session = await checkSession();
+    if (!session) {
+      toast.error('Musisz być zalogowany, aby kupić bilety.', {
+        action: {
+          label: 'Zaloguj się',
+          onClick: () => router.push('/login'),
+        },
+      });
+      return;
+    }
+
     try {
       setLoading(true);
       const response = await fetch(`/api/stripe?eventId=${event.id}`, {
@@ -38,10 +49,15 @@ export default function EventTicketCard(props: EventTicketCardProps) {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `Failed to check existing product: ${response.status} - ${errorText}`
-        );
+        const data = await response.json();
+        toast.error(data.error, {
+          action: {
+            label: 'Twoje bilety ↗',
+            onClick: () => router.push('/bookings'),
+          },
+        });
+
+        return;
       }
 
       const data = await response.json();
@@ -51,21 +67,17 @@ export default function EventTicketCard(props: EventTicketCardProps) {
           if (data.priceId) {
             router.push(`/events/pay?priceId=${data.priceId}`);
           } else {
-            throw new Error('Single ticket price ID not found for this event.');
+            toast.error('Bilety dla tego wydarzenia nie są jeszcze dostępne.');
           }
         } else if (cardType === 'pass') {
           if (data.passPriceId) {
             router.push(`/events/pay?priceId=${data.passPriceId}`);
           } else {
-            console.warn('Pass product ID not found for this event.');
             toast.error('Karnet nie jest dostępny dla tego wydarzenia.');
           }
         }
       } else {
-        console.error(
-          'No Stripe product found for this event. Ensure products are created.'
-        );
-        toast.error('Bilety nie są jeszcze dostępne dla tego wydarzenia.');
+        toast.error('Bilety dla tego wydarzenia nie są jeszcze dostępne.');
       }
     } catch (error) {
       console.error('Error buying ticket:', error);
@@ -118,9 +130,12 @@ export default function EventTicketCard(props: EventTicketCardProps) {
               onClick={handleBuy}
               disabled={loading || priceInPLN === 0}
             >
-              <Ticket className="size-5 text-white" />
+              {!loading && <Ticket className="size-5 text-white" />}
               {loading ? (
-                <span>Przetwarzanie...</span>
+                <>
+                  <Loader2 className="size-5 text-white animate-spin" />
+                  <span>Przetwarzanie...</span>
+                </>
               ) : priceInPLN === 0 ? (
                 <span>To wydarzenie jest darmowe</span>
               ) : cardType === 'pass' ? (
