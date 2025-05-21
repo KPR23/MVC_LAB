@@ -15,7 +15,7 @@ Aplikacja do rezerwacji biletów na wydarzenia umożliwiająca użytkownikom prz
 
 - **Przeglądanie wydarzeń** - użytkownicy mogą przeglądać dostępne wydarzenia
 - **Zakup biletów** - możliwość zakupu biletów na wybrane wydarzenie
-- **Szczegóły wydarzenia** - wyświetlanie szczegółowych informacji o wybranym wydarzeniu, w tym zdjęć, opisu, daty, lokalizacji i artystów występujących na wydarzeniu
+- **Szczegóły wydarzenia** - wyświetlanie szczegółowych informacji o wybranym wydarzeniu, w tym zdjęć, opisu, daty, lokalizacji, artystów występujących oraz ceny i pozostałych wolnych miejsc
 - **Zarządzanie wydarzeniami** - dodawanie, edycja i usuwanie wydarzeń
 
 ## 🛠️ Instrukcja uruchomienia
