@@ -83,6 +83,17 @@ export default function AddEventForm() {
         body: JSON.stringify(eventInputData),
       });
 
+      if (!response.ok) {
+        if (response.status === 401) {
+          toast.error(
+            'Nie jesteś uprawniony do dodawania wydarzeń. Zaloguj się, aby kontynuować.'
+          );
+          return;
+        }
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to add event');
+      }
+
       const createdEvent = await response.json();
 
       const eventDetailsForStripe = {
@@ -105,15 +116,9 @@ export default function AddEventForm() {
         body: JSON.stringify(payloadForStripe),
       });
 
-      if (!stripeResponse.ok && !response.ok) {
+      if (!stripeResponse.ok) {
         const stripeErrorData = await stripeResponse.json();
-        const errorData = await response.json();
-        toast.error(
-          stripeErrorData.message || errorData.message || 'Failed to add event'
-        );
-        throw new Error(
-          stripeErrorData.message || errorData.message || 'Failed to add event'
-        );
+        throw new Error(stripeErrorData.message || 'Failed to process payment');
       }
 
       toast.success('Wydarzenie dodane pomyślnie!');

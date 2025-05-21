@@ -1,7 +1,9 @@
-'use client';
 import { AddEventForm, TitleBox } from '@/src/components';
+import { verifySession } from '@/src/server/db/dal';
 
-export default function AddEventPage() {
+export default async function AddEventPage() {
+  const session = await verifySession();
+
   return (
     <div>
       <TitleBox
