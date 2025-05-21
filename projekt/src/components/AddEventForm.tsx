@@ -45,7 +45,7 @@ const EVENT_CATEGORIES = [
 
 const DEFAULT_VALUES: EventFormValues = {
   title: '',
-  artists: [{ name: '' }],
+  artists: [{ id: crypto.randomUUID(), name: '' }],
   organizer: '',
   description: '',
   category: 'Muzyka',
@@ -337,6 +337,11 @@ function EventDetailsSection({
                   </FormItem>
                 )}
               />
+              <input
+                type="hidden"
+                {...form.register(`artists.${index}.id`)}
+                value={field.id}
+              />
               {fields.length > 1 && (
                 <Button
                   type="button"
@@ -353,7 +358,7 @@ function EventDetailsSection({
             type="button"
             variant="outline"
             className=" w-full"
-            onClick={() => append({ name: '' })}
+            onClick={() => append({ id: crypto.randomUUID(), name: '' })}
           >
             <Plus className="h-4 w-4" /> Dodaj kolejnego artystę
           </Button>

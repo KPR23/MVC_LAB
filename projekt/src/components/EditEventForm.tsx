@@ -25,14 +25,15 @@ import {
   EventFormValues,
 } from '@/src/utils/schemas/eventSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ImageIcon, Plus, Trash2 } from 'lucide-react';
+import { ImageIcon, Loader2, Plus, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useUploadThing } from '../utils/uploadthing';
 import { DatePickerWithRange } from './ui/datepicker';
+import { createSlug } from '../utils/eventUtils';
 
 const EVENT_CATEGORIES = [
   { id: 'Muzyka', label: 'Muzyka' },
@@ -48,6 +49,8 @@ export default function EditEventForm(event: EventFormValues) {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+
+  const eventSlug = `${createSlug(event.category)}/${createSlug(event.title)}`;
 
   const { startUpload } = useUploadThing('imageUploader', {
     onUploadProgress: (progress) => {
@@ -67,20 +70,37 @@ export default function EditEventForm(event: EventFormValues) {
     },
   });
 
-  const formValues = {
-    ...event,
-    price: event.price / 100,
-  };
-
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
-    defaultValues: formValues,
+    defaultValues: {
+      ...event,
+      price: event.price / 100,
+      artists: event.artists?.map((artist) => ({
+        id: artist.id,
+        name: artist.name || '',
+      })) || [{ id: crypto.randomUUID(), name: '' }],
+    },
+    mode: 'onChange',
   });
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: 'artists',
   });
+
+  useEffect(() => {
+    if (event.id) {
+      const formData = {
+        ...event,
+        price: event.price / 100,
+        artists: event.artists?.map((artist) => ({
+          id: artist.id,
+          name: artist.name || '',
+        })) || [{ id: crypto.randomUUID(), name: '' }],
+      };
+      form.reset(formData);
+    }
+  }, [event.id, event.artists, form]);
 
   const handleFileSelected = (file: File) => {
     setImageFile(file);
@@ -139,6 +159,16 @@ export default function EditEventForm(event: EventFormValues) {
     try {
       setLoading(true);
 
+      const updatedValues = {
+        ...values,
+        artists: values.artists.map((artist) => ({
+          id: artist.id,
+          name: artist.name || '',
+        })),
+      };
+
+      console.log('Submitting form with values:', updatedValues);
+
       if (imageFile) {
         try {
           setUploadProgress(0);
@@ -147,7 +177,7 @@ export default function EditEventForm(event: EventFormValues) {
           const uploadResponse = await startUpload([imageFile]);
 
           if (uploadResponse && uploadResponse[0]?.url) {
-            values.imageUrl = uploadResponse[0].url;
+            updatedValues.imageUrl = uploadResponse[0].url;
             form.setValue('imageUrl', uploadResponse[0].url);
           } else {
             throw new Error(
@@ -163,11 +193,12 @@ export default function EditEventForm(event: EventFormValues) {
         }
       }
 
-      if (!values.imageUrl) {
-        values.imageUrl = '';
+      if (!updatedValues.imageUrl) {
+        updatedValues.imageUrl = '';
       }
 
-      const eventInputData = formatEventData(values);
+      const eventInputData = formatEventData(updatedValues);
+      console.log('Sending data to API:', eventInputData);
 
       const response = await fetch('/api/events', {
         method: 'PUT',
@@ -179,13 +210,46 @@ export default function EditEventForm(event: EventFormValues) {
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('API Error:', errorData);
         throw new Error(errorData.message || 'Failed to add event');
       }
 
+      const stripeResponse = await fetch(`/api/stripe?eventId=${values.id}`, {
+        method: 'GET',
+      });
+
+      if (stripeResponse.ok) {
+        const stripeData = await stripeResponse.json();
+
+        if (stripeData.exists) {
+          const updateStripeResponse = await fetch('/api/stripe', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              event: {
+                event: {
+                  ...eventInputData,
+                  eventId: values.id,
+                },
+              },
+            }),
+          });
+
+          if (!updateStripeResponse.ok) {
+            const stripeErrorData = await updateStripeResponse.json();
+            console.error('Failed to update Stripe price:', stripeErrorData);
+            toast.warning(
+              'Wydarzenie zaktualizowane, ale wystąpił problem z aktualizacją ceny w systemie płatności.'
+            );
+          }
+        }
+      }
+
       toast.success('Wydarzenie zaktualizowane pomyślnie!');
-      form.reset();
       router.refresh();
-      router.push('/events');
+      router.push(`/events/${eventSlug}`);
     } catch (error) {
       console.error('Form submission error', error);
       toast.error(
@@ -230,9 +294,14 @@ export default function EditEventForm(event: EventFormValues) {
             Usuń wydarzenie
           </Button>
           <Button type="submit" disabled={loading || isUploading}>
-            {loading || isUploading
-              ? 'Przetwarzanie...'
-              : 'Zaktualizuj wydarzenie'}
+            {loading || isUploading ? (
+              <>
+                <Loader2 className="size-5 text-white animate-spin" />
+                <span>Przetwarzanie...</span>
+              </>
+            ) : (
+              'Zaktualizuj wydarzenie'
+            )}
           </Button>
         </div>
       </form>
@@ -264,10 +333,12 @@ function formatEventData(values: EventFormValues) {
   const dateOnlyString = eventDateFromObject.toISOString().split('T')[0];
   const dateOnlyStringTo = eventDateToObject.toISOString().split('T')[0];
 
+  console.log('Formatting artists data:', values.artists);
   const artists = values.artists.map((artist) => ({
-    ...artist,
     id: artist.id || crypto.randomUUID(),
+    name: artist.name || '',
   }));
+  console.log('Formatted artists data:', artists);
 
   return {
     id: values.id,
@@ -329,12 +400,20 @@ function EventDetailsSection({
                       <Input
                         placeholder="Nazwa artysty"
                         {...field}
+                        onBlur={() => {
+                          form.trigger(`artists.${index}.name`);
+                        }}
                         className="w-full"
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
+              />
+              <input
+                type="hidden"
+                {...form.register(`artists.${index}.id`)}
+                value={field.id}
               />
               {fields.length > 1 && (
                 <Button
@@ -351,17 +430,14 @@ function EventDetailsSection({
           <Button
             type="button"
             variant="outline"
-            className="w-full"
-            onClick={() => append({ name: '' })}
+            size="sm"
+            className="mt-2"
+            onClick={() => append({ id: crypto.randomUUID(), name: '' })}
           >
-            <Plus className="h-4 w-4" /> Dodaj kolejnego artystę
+            <Plus className="h-4 w-4 mr-2" />
+            Dodaj artystę
           </Button>
         </div>
-        {form.formState.errors.artists?.message && (
-          <p className="text-sm font-medium text-destructive mt-2">
-            {form.formState.errors.artists.message}
-          </p>
-        )}
       </div>
 
       <FormField

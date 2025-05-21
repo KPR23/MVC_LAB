@@ -192,11 +192,6 @@ export default async function EventPage(props: {
           </section>
         </div>
       </div>
-      <div className="flex justify-end">
-        <Link href={`/events/edit/${eventSlug}`}>
-          <Button variant="outline">Edytuj lub usuń wydarzenie</Button>
-        </Link>
-      </div>
     </div>
   );
 }

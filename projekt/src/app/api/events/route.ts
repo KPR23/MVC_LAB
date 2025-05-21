@@ -68,9 +68,11 @@ export async function PUT(request: NextRequest) {
   }
   try {
     const eventData = await request.json();
+    console.log('Received data in API:', eventData);
     const event = await Mutations.updateEvent({
       event: eventData,
     });
+    console.log('Update result:', event);
     return new Response(
       JSON.stringify({ event, message: 'Event updated successfully' }),
       {

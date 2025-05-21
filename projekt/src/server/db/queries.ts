@@ -163,11 +163,12 @@ export const Mutations = {
     };
   }) {
     try {
+      console.log('Updating event with data:', input.event);
       if (!input.event.id) {
         throw new Error('Event ID is required for update');
       }
 
-      await db
+      const updateResult = await db
         .update(events)
         .set({
           title: input.event.title,
@@ -186,10 +187,13 @@ export const Mutations = {
         })
         .where(eq(events.id, input.event.id));
 
+      console.log('Event update result:', updateResult);
+
       await db
         .delete(eventArtists)
         .where(eq(eventArtists.eventId, input.event.id));
 
+      console.log('Processing artists:', input.event.artists);
       for (const artist of input.event.artists) {
         let artistId;
 
@@ -236,6 +240,7 @@ export const Mutations = {
 
       return { eventId: input.event.id };
     } catch (dbError) {
+      console.error('Database error:', dbError);
       throw new Error('Failed to update event in the database.', {
         cause: dbError,
       });
