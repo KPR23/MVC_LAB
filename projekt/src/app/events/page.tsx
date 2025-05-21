@@ -1,8 +1,8 @@
 import { EventFilter, EventListPage, TitleBox } from '@/src/components';
-import { EventModel } from '@/src/models/EventModel';
+import { EventController } from '@/src/controllers/EventController';
 
 export default async function EventsPage() {
-  const events = await EventModel.getAllEvents();
+  const events = await EventController.getAllEvents();
 
   return (
     <div className="flex flex-col items-center justify-center w-full">

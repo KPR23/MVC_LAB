@@ -1,12 +1,12 @@
 'use client';
 
+import { checkSession, logout } from '@/src/app/actions/auth';
 import { cn } from '@/src/utils/utils';
 import { TicketCheck } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Button } from './ui/button';
-import { logout, checkSession } from '@/src/app/actions/auth';
 import { useEffect, useState } from 'react';
+import { Button } from './ui/button';
 
 type Session = {
   isAuth: boolean;

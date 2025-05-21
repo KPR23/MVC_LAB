@@ -1,13 +1,13 @@
 import { Calendar, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { DB_EventType } from '../server/db/schema';
+import { EventModel } from '../models/EventModel';
 import { createSlug, getEventDateInfo } from '../utils/eventUtils';
 import { Badge } from './ui/badge';
 import { Card, CardContent } from './ui/card';
 
 interface EventCardProps {
-  event: DB_EventType;
+  event: EventModel;
 }
 
 export default function EventCard({ event }: EventCardProps) {

@@ -2,7 +2,7 @@ import 'server-only';
 
 import { eq } from 'drizzle-orm';
 import db from './drizzle';
-import { artists, eventArtists, events, bookings } from './schema';
+import { artists, bookings, eventArtists, events } from './schema';
 
 export const Queries = {
   getEvents: function () {
@@ -242,6 +242,23 @@ export const Mutations = {
     }
   },
   deleteEvent: async function (input: { event: { id: string } }) {
-    await db.delete(events).where(eq(events.id, input.event.id));
+    try {
+      // First, check if there are any bookings associated with this event
+      const existingBookings = await db.query.bookings.findMany({
+        where: eq(bookings.eventId, input.event.id),
+      });
+
+      if (existingBookings.length > 0) {
+        // Delete all associated bookings first
+        await db.delete(bookings).where(eq(bookings.eventId, input.event.id));
+      }
+
+      // Then delete the event
+      await db.delete(events).where(eq(events.id, input.event.id));
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      throw new Error(`Failed to delete event: ${(error as Error).message}`);
+    }
   },
 };

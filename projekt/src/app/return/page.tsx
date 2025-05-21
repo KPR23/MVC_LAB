@@ -1,10 +1,10 @@
-import { redirect } from 'next/navigation';
-import { stripe } from '../../utils/stripe';
 import TitleBox from '@/src/components/TitleBox';
-import Link from 'next/link';
 import { verifySession } from '@/src/server/db/dal';
 import { Queries } from '@/src/server/db/queries';
+import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { Stripe } from 'stripe';
+import { stripe } from '../../utils/stripe';
 
 export default async function Return({
   searchParams,
@@ -31,8 +31,6 @@ export default async function Return({
       metadata: (item.price?.product as Stripe.Product)?.metadata,
     })),
   });
-
-  const customerEmail = customer_details?.email;
 
   if (status === 'open') {
     return redirect('/');

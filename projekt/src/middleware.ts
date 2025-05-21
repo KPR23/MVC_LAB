@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { decrypt } from '@/src/app/actions/session';
 import { cookies } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
 
 const protectedRoutes = ['/bookings', '/pay', '/add', '/edit'];
-const publicRoutes = ['/login', '/signup', '/events', '/'];
+const publicRoutes = ['/login', '/signup', '/events'];
 
 export default async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
