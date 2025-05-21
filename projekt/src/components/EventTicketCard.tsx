@@ -38,9 +38,8 @@ export default function EventTicketCard(props: EventTicketCardProps) {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `Failed to check existing product: ${response.status} - ${errorText}`
+        toast.error(
+          'Wystąpił błąd podczas przetwarzania zakupu. Spróbuj ponownie później.'
         );
       }
 

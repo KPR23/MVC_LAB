@@ -14,8 +14,8 @@ export default function LoginForm() {
   return (
     <div className="flex flex-col mb-50">
       <TitleBox
-        action="Witaj ponownie"
-        featuredTitle="w Eventix"
+        action="Witaj"
+        featuredTitle="ponownie"
         description="Zaloguj się, aby kontynuować"
         button={false}
       />

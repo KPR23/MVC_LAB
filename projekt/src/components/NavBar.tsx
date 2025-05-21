@@ -11,7 +11,6 @@ import { useEffect, useState } from 'react';
 type Session = {
   isAuth: boolean;
   userId: string;
-  name: string;
 } | null;
 
 export default function NavBar({
