@@ -14,9 +14,12 @@ Aplikacja do rezerwacji biletów na wydarzenia umożliwiająca użytkownikom prz
 ## ✨ Funkcjonalności
 
 - **Przeglądanie wydarzeń** - użytkownicy mogą przeglądać dostępne wydarzenia
+- **Logowanie** - możliwość logowania się do aplikacji
 - **Zakup biletów** - możliwość zakupu biletów na wybrane wydarzenie
 - **Szczegóły wydarzenia** - wyświetlanie szczegółowych informacji o wybranym wydarzeniu, w tym zdjęć, opisu, daty, lokalizacji, artystów występujących oraz ceny i pozostałych wolnych miejsc
 - **Zarządzanie wydarzeniami** - dodawanie, edycja i usuwanie wydarzeń
+- **Integracja z Stripe** - płatności przez Stripe
+- **Integracja z UploadThing** - przesyłanie plakatów wydarzeń
 
 ## 🛠️ Instrukcja uruchomienia
 
