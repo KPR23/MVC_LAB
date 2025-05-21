@@ -455,8 +455,6 @@ function LocationAndDateSection({
         return;
       }
 
-      const fileUrl = URL.createObjectURL(file);
-      setPreviewUrl(fileUrl);
       onFileSelected(file);
     }
   };

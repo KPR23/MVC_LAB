@@ -97,7 +97,6 @@ export default function AddEventForm() {
 
   const handleFileSelected = (file: File) => {
     setImageFile(file);
-    const fileUrl = URL.createObjectURL(file);
     form.clearErrors('imageUrl');
   };
 

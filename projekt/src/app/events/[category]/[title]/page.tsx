@@ -15,7 +15,6 @@ import { Calendar, MapPin, Ticket } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { toast } from 'sonner';
 
 export default async function EventPage(props: {
   params: Promise<{ category: string; title: string }>;
