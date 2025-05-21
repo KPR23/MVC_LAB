@@ -1,7 +1,7 @@
 import { Calendar, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getEventDateInfo, createSlug } from '../utils/eventUtils';
+import { getEventDateInfo /* createSlug */ } from '../utils/eventUtils';
 import { Badge } from './ui/badge';
 import { Card, CardContent } from './ui/card';
 import { EventData } from './EventListPage';

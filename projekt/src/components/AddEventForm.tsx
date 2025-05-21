@@ -63,13 +63,11 @@ export default function AddEventForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>('');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
 
-  const { startUpload, isUploading: uploadThingIsUploading } = useUploadThing(
-    'imageUploader',
-    {
+  const { startUpload /* isUploading: uploadThingIsUploading */ } =
+    useUploadThing('imageUploader', {
       onUploadProgress: (progress) => {
         setUploadProgress(progress);
       },
@@ -85,8 +83,7 @@ export default function AddEventForm() {
         console.error('Upload error:', error);
         toast.error('Błąd podczas przesyłania plakatu. Spróbuj ponownie.');
       },
-    }
-  );
+    });
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
@@ -101,7 +98,6 @@ export default function AddEventForm() {
   const handleFileSelected = (file: File) => {
     setImageFile(file);
     const fileUrl = URL.createObjectURL(file);
-    setPreviewUrl(fileUrl);
     form.clearErrors('imageUrl');
   };
 
@@ -191,7 +187,6 @@ export default function AddEventForm() {
         toast.success('Wydarzenie dodane pomyślnie!');
         form.reset();
         setImageFile(null);
-        setPreviewUrl('');
         router.refresh();
         router.push('/events');
       } catch (apiError) {
@@ -296,7 +291,7 @@ function EventDetailsSection({
   remove,
 }: {
   form: ReturnType<typeof useForm<EventFormValues>>;
-  fields: any[];
+  fields: ReturnType<typeof useFieldArray>['fields'];
   append: (value: ArtistFormValues) => void;
   remove: (index: number) => void;
 }) {

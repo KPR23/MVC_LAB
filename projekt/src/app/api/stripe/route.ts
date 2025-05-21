@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
 
     let eventDetails = body.event?.event;
-    let eventId = eventDetails?.eventId || searchParams.get('eventId');
+    const eventId = eventDetails?.eventId || searchParams.get('eventId');
 
     if (!eventId) {
       return new Response(

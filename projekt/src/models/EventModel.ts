@@ -76,7 +76,12 @@ export class EventModel {
     return { category: categorySlug, title: titleSlug };
   }
 
-  static fromPlainObject(obj: any): EventModel {
+  static fromPlainObject(
+    obj: Omit<DB_EventType, 'createdAt'> & {
+      createdAt: Date | string;
+      artistsData?: Array<{ id: string; name: string }>;
+    }
+  ): EventModel {
     const eventData = {
       id: obj.id,
       title: obj.title,
@@ -92,7 +97,10 @@ export class EventModel {
       capacity: obj.capacity,
       availableSeats: obj.availableSeats,
       price: obj.price,
-      createdAt: obj.createdAt,
+      createdAt:
+        typeof obj.createdAt === 'string'
+          ? new Date(obj.createdAt)
+          : obj.createdAt,
     } as DB_EventType;
 
     const model = new EventModel(eventData);

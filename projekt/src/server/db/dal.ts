@@ -55,7 +55,7 @@ export const getUser = cache(async () => {
 
     return user;
   } catch (error) {
-    console.log('Failed to fetch user');
+    console.log('Failed to fetch user', error);
     return null;
   }
 });

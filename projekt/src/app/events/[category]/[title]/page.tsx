@@ -38,18 +38,6 @@ export default async function EventPage(props: {
     fullMonthWithYear,
   } = getEventDateInfo(event);
 
-  async function handleDelete(eventSlug: string) {
-    const response = await fetch(`/api/events/${eventSlug}`, {
-      method: 'DELETE',
-    });
-    if (response.ok) {
-      toast.success('Wydarzenie usunięte pomyślnie');
-    } else {
-      toast.error('Nie udało się usunąć wydarzenia', {
-        description: 'Spróbuj ponownie później',
-      });
-    }
-  }
   return (
     <div className="xl:px-50 2xl:px-80 py-6">
       <Breadcrumb>

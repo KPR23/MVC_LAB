@@ -17,10 +17,13 @@ export default async function Return({
   if (!session_id)
     throw new Error('Please provide a valid session_id (`cs_test_...`)');
 
-  const { status, customer_details, line_items } =
-    await stripe.checkout.sessions.retrieve(session_id, {
-      expand: ['line_items', 'line_items.data.price.product', 'payment_intent'],
-    });
+  const {
+    status,
+    customer_details: _,
+    line_items,
+  } = await stripe.checkout.sessions.retrieve(session_id, {
+    expand: ['line_items', 'line_items.data.price.product', 'payment_intent'],
+  });
 
   console.log('Stripe session details:', {
     status,

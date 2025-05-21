@@ -46,30 +46,26 @@ export default function EditEventForm(event: EventFormValues) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>(event.imageUrl || '');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
 
-  const { startUpload, isUploading: uploadThingIsUploading } = useUploadThing(
-    'imageUploader',
-    {
-      onUploadProgress: (progress) => {
-        setUploadProgress(progress);
-      },
-      onUploadBegin: () => {
-        setIsUploading(true);
-      },
-      onClientUploadComplete: () => {
-        setIsUploading(false);
-        setUploadProgress(100);
-      },
-      onUploadError: (error) => {
-        setIsUploading(false);
-        console.error('Upload error:', error);
-        toast.error('Błąd podczas przesyłania plakatu. Spróbuj ponownie.');
-      },
-    }
-  );
+  const { startUpload } = useUploadThing('imageUploader', {
+    onUploadProgress: (progress) => {
+      setUploadProgress(progress);
+    },
+    onUploadBegin: () => {
+      setIsUploading(true);
+    },
+    onClientUploadComplete: () => {
+      setIsUploading(false);
+      setUploadProgress(100);
+    },
+    onUploadError: (error) => {
+      setIsUploading(false);
+      console.error('Upload error:', error);
+      toast.error('Błąd podczas przesyłania plakatu. Spróbuj ponownie.');
+    },
+  });
 
   const formValues = {
     ...event,
@@ -89,24 +85,7 @@ export default function EditEventForm(event: EventFormValues) {
   const handleFileSelected = (file: File) => {
     setImageFile(file);
     const fileUrl = URL.createObjectURL(file);
-    setPreviewUrl(fileUrl);
     form.clearErrors('imageUrl');
-  };
-
-  const defaultValues: EventFormValues = {
-    title: event.title,
-    artists: event.artists,
-    organizer: event.organizer,
-    description: event.description,
-    category: event.category,
-    city: event.city,
-    location: event.location,
-    capacity: event.capacity,
-    imageUrl: event.imageUrl,
-    price: event.price / 100,
-    dateFrom: event.dateFrom,
-    dateTo: event.dateTo,
-    time: event.time,
   };
 
   async function handleDelete(eventId: string) {
@@ -317,7 +296,7 @@ function EventDetailsSection({
   remove,
 }: {
   form: ReturnType<typeof useForm<EventFormValues>>;
-  fields: any[];
+  fields: ReturnType<typeof useFieldArray>['fields'];
   append: (value: ArtistFormValues) => void;
   remove: (index: number) => void;
 }) {

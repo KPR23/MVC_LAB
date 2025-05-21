@@ -29,10 +29,10 @@ export function getEventDateInfo(event: {
   });
 
   let shortDayName = dateFrom.toLocaleDateString('pl-PL', { weekday: 'short' });
-  let shortDayNameTo = dateTo.toLocaleDateString('pl-PL', {
+  const shortDayNameTo = dateTo.toLocaleDateString('pl-PL', {
     weekday: 'short',
   });
-  let fullDayName = dateFrom.toLocaleDateString('pl-PL', { weekday: 'long' });
+  const fullDayName = dateFrom.toLocaleDateString('pl-PL', { weekday: 'long' });
 
   if (shortDayName.endsWith('.')) {
     shortDayName = shortDayName.slice(0, -1);
