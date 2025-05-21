@@ -1,4 +1,3 @@
-'use server';
 import 'server-only';
 
 import { SessionPayload } from '@/src/utils/schemas/authSchema';

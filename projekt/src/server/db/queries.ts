@@ -2,7 +2,7 @@ import 'server-only';
 
 import { eq } from 'drizzle-orm';
 import db from './drizzle';
-import { events, artists, eventArtists } from './schema';
+import { artists, eventArtists, events } from './schema';
 
 export const Queries = {
   getEvents: function () {
@@ -146,7 +146,6 @@ export const Mutations = {
         throw new Error('Event ID is required for update');
       }
 
-      // Update event basic info
       await db
         .update(events)
         .set({
@@ -166,16 +165,13 @@ export const Mutations = {
         })
         .where(eq(events.id, input.event.id));
 
-      // Delete existing artist relationships for this event
       await db
         .delete(eventArtists)
         .where(eq(eventArtists.eventId, input.event.id));
 
-      // Add updated artist relationships
       for (const artist of input.event.artists) {
         let artistId;
 
-        // Check if artist exists by name
         const existingArtistByName = await db
           .select({ id: artists.id })
           .from(artists)
@@ -184,7 +180,6 @@ export const Mutations = {
         if (existingArtistByName.length > 0) {
           artistId = existingArtistByName[0].id;
         } else if (artist.id) {
-          // Check if artist exists by ID
           const existingArtistById = await db
             .select({ id: artists.id })
             .from(artists)
@@ -193,7 +188,6 @@ export const Mutations = {
           if (existingArtistById.length > 0) {
             artistId = existingArtistById[0].id;
           } else {
-            // Create new artist with provided ID
             const newArtist = await db
               .insert(artists)
               .values({
@@ -204,7 +198,6 @@ export const Mutations = {
             artistId = newArtist[0].id;
           }
         } else {
-          // Create new artist with generated ID
           const newArtist = await db
             .insert(artists)
             .values({
@@ -214,7 +207,6 @@ export const Mutations = {
           artistId = newArtist[0].id;
         }
 
-        // Create relationship between event and artist
         await db.insert(eventArtists).values({
           eventId: input.event.id,
           artistId: artistId,

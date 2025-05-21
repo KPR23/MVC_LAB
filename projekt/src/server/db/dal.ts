@@ -9,7 +9,12 @@ import { redirect } from 'next/navigation';
 import { cache } from 'react';
 import { NextRequest } from 'next/server';
 
-export const verifySession = cache(async () => {
+type Session = {
+  isAuth: boolean;
+  userId: string;
+} | null;
+
+export const verifySession = cache(async (): Promise<Session> => {
   const cookie = (await cookies()).get('session')?.value;
   const session = await decrypt(cookie);
 
@@ -18,7 +23,7 @@ export const verifySession = cache(async () => {
     redirect('/login');
   }
 
-  return { isAuth: true, userId: session.userId };
+  return { isAuth: true, userId: session.userId as string };
 });
 
 export const verifyApiSession = async (request: NextRequest) => {
