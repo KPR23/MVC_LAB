@@ -31,6 +31,11 @@ export default function EventTicketCard(props: EventTicketCardProps) {
   } = getEventDateInfo(event);
 
   const handleBuy = async () => {
+    if (event.availableSeats <= 0) {
+      toast.error('Wydarzenie wyprzedane. Brak dostępnych miejsc.');
+      return;
+    }
+
     const session = await checkSession();
     if (!session) {
       toast.error('Musisz być zalogowany, aby kupić bilety.', {
@@ -90,6 +95,8 @@ export default function EventTicketCard(props: EventTicketCardProps) {
   };
 
   const isMultiDayDisplay = event.dateFrom !== event.dateTo;
+  const isSoldOut = event.availableSeats <= 0;
+
   return (
     <Card className="relative w-full bg-card rounded-lg shadow-sm overflow-hidden px-4">
       <div className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-8 bg-muted rounded-r-full z-10"></div>
@@ -128,7 +135,7 @@ export default function EventTicketCard(props: EventTicketCardProps) {
             <Button
               className="bg-primary transition-colors py-6 flex items-center gap-2 w-full justify-center "
               onClick={handleBuy}
-              disabled={loading || priceInPLN === 0}
+              disabled={loading || priceInPLN === 0 || isSoldOut}
             >
               {!loading && <Ticket className="size-5 text-white" />}
               {loading ? (
@@ -136,6 +143,8 @@ export default function EventTicketCard(props: EventTicketCardProps) {
                   <Loader2 className="size-5 text-white animate-spin" />
                   <span>Przetwarzanie...</span>
                 </>
+              ) : isSoldOut ? (
+                <span>Wydarzenie wyprzedane</span>
               ) : priceInPLN === 0 ? (
                 <span>To wydarzenie jest darmowe</span>
               ) : cardType === 'pass' ? (
@@ -152,7 +161,16 @@ export default function EventTicketCard(props: EventTicketCardProps) {
             </Button>
 
             <div className="text-xs text-muted-foreground mt-2 text-center">
-              Cena zawiera wszystkie opłaty obowiązkowe.
+              {isSoldOut ? (
+                'Brak dostępnych miejsc'
+              ) : (
+                <>
+                  Cena zawiera wszystkie opłaty obowiązkowe.
+                  <div className="mt-1">
+                    Dostępne miejsca: {event.availableSeats} / {event.capacity}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

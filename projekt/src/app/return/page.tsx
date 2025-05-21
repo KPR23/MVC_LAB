@@ -1,6 +1,9 @@
 import TitleBox from '@/src/components/TitleBox';
 import { verifySession } from '@/src/server/db/dal';
 import { Queries } from '@/src/server/db/queries';
+import db from '@/src/server/db/drizzle';
+import { events as eventsTable } from '@/src/server/db/schema';
+import { eq } from 'drizzle-orm';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { Stripe } from 'stripe';
@@ -50,6 +53,23 @@ export default async function Return({
 
     if (eventId) {
       try {
+        const eventResults = await db
+          .select()
+          .from(eventsTable)
+          .where(eq(eventsTable.id, eventId));
+
+        if (eventResults.length > 0) {
+          const event = eventResults[0];
+          if (event.availableSeats > 0) {
+            await db
+              .update(eventsTable)
+              .set({
+                availableSeats: event.availableSeats - 1,
+              })
+              .where(eq(eventsTable.id, eventId));
+          }
+        }
+
         await Queries.createBooking(session.userId, eventId, session_id);
         console.log('Booking created successfully');
       } catch (error) {

@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ImageIcon, Plus, Trash2 } from 'lucide-react';
+import { ImageIcon, Loader2, Plus, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -66,24 +66,23 @@ export default function AddEventForm() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
 
-  const { startUpload /* isUploading: uploadThingIsUploading */ } =
-    useUploadThing('imageUploader', {
-      onUploadProgress: (progress) => {
-        setUploadProgress(progress);
-      },
-      onUploadBegin: () => {
-        setIsUploading(true);
-      },
-      onClientUploadComplete: () => {
-        setIsUploading(false);
-        setUploadProgress(100);
-      },
-      onUploadError: (error) => {
-        setIsUploading(false);
-        console.error('Upload error:', error);
-        toast.error('Błąd podczas przesyłania plakatu. Spróbuj ponownie.');
-      },
-    });
+  const { startUpload } = useUploadThing('imageUploader', {
+    onUploadProgress: (progress) => {
+      setUploadProgress(progress);
+    },
+    onUploadBegin: () => {
+      setIsUploading(true);
+    },
+    onClientUploadComplete: () => {
+      setIsUploading(false);
+      setUploadProgress(100);
+    },
+    onUploadError: (error) => {
+      setIsUploading(false);
+      console.error('Upload error:', error);
+      toast.error('Błąd podczas przesyłania plakatu. Spróbuj ponownie.');
+    },
+  });
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
@@ -228,7 +227,14 @@ export default function AddEventForm() {
         </div>
         <div className="flex justify-end">
           <Button type="submit" disabled={loading || isUploading}>
-            {loading || isUploading ? 'Przetwarzanie...' : 'Dodaj wydarzenie'}
+            {loading || isUploading ? (
+              <>
+                <Loader2 className="size-5 text-white animate-spin" />
+                <span>Przetwarzanie...</span>
+              </>
+            ) : (
+              'Dodaj wydarzenie'
+            )}
           </Button>
         </div>
       </form>

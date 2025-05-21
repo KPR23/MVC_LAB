@@ -1,5 +1,8 @@
 import { BookingController } from '@/src/controllers/BookingController';
 import { verifyApiSession } from '@/src/server/db/dal';
+import db from '@/src/server/db/drizzle';
+import { events as eventsTable } from '@/src/server/db/schema';
+import { eq } from 'drizzle-orm';
 import { getEventDateInfo } from '@/src/utils/eventUtils';
 import { stripe } from '@/src/utils/stripe';
 import { NextRequest } from 'next/server';
@@ -24,6 +27,31 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    const eventResults = await db
+      .select()
+      .from(eventsTable)
+      .where(eq(eventsTable.id, eventId));
+
+    if (eventResults.length === 0) {
+      return new Response(JSON.stringify({ error: 'Event not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    const event = eventResults[0];
+    if (event.availableSeats <= 0) {
+      return new Response(
+        JSON.stringify({
+          error: 'Wydarzenie wyprzedane. Brak dostępnych miejsc.',
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     const ticketProducts = await stripe.products.search({
       query: `metadata["type"]:"ticket_${eventId}"`,
     });
@@ -49,12 +77,15 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const { events } = await BookingController.getUserBookingsWithEventModels(
-      session.userId as string
-    );
+    const userBookingsResult =
+      await BookingController.getUserBookingsWithEventModels(
+        session.userId as string
+      );
+
+    const userEvents = userBookingsResult.events || [];
     console.log(session.userId);
 
-    const userBookedEvent = events.some((e) => e.id === eventId);
+    const userBookedEvent = userEvents.some((e) => e.id === eventId);
 
     if (userBookedEvent) {
       return new Response(
@@ -92,6 +123,7 @@ export async function GET(request: NextRequest) {
         priceId: ticketPriceId,
         passPriceId,
         exists: true,
+        availableSeats: event.availableSeats,
       }),
       {
         status: 200,
