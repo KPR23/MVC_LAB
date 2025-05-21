@@ -431,7 +431,6 @@ function LocationAndDateSection({
   onFileSelected,
   uploadProgress,
   isUploading,
-  initialImageUrl,
 }: {
   form: ReturnType<typeof useForm<EventFormValues>>;
   onFileSelected: (file: File) => void;

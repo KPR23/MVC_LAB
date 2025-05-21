@@ -169,7 +169,9 @@ export default async function EventPage(props: {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-3xl font-bold">O wydarzeniu</h2>
             </div>
-            <h3 className="text-lg mb-6">{event.description}</h3>
+            <div className="text-lg mb-6 whitespace-pre-line">
+              {event.description}
+            </div>
           </section>
           <section id="artists">
             <div className="flex justify-between items-center mb-6">
