@@ -7,7 +7,7 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from '@/components/ui/drawer';
+} from '@/src/components/ui/drawer';
 import { Badge } from '@/src/components/ui/badge';
 import {
   Breadcrumb,
