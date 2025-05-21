@@ -94,40 +94,14 @@ export const Mutations = {
       for (const artist of input.event.artists) {
         let artistId;
 
-        const existingArtistByName = await db
-          .select({ id: artists.id })
-          .from(artists)
-          .where(eq(artists.name, artist.name));
-
-        if (existingArtistByName.length > 0) {
-          artistId = existingArtistByName[0].id;
-        } else if (artist.id) {
-          const existingArtistById = await db
-            .select({ id: artists.id })
-            .from(artists)
-            .where(eq(artists.id, artist.id));
-
-          if (existingArtistById.length > 0) {
-            artistId = existingArtistById[0].id;
-          } else {
-            const newArtist = await db
-              .insert(artists)
-              .values({
-                id: artist.id,
-                name: artist.name,
-              })
-              .returning({ id: artists.id });
-            artistId = newArtist[0].id;
-          }
-        } else {
-          const newArtist = await db
-            .insert(artists)
-            .values({
-              name: artist.name,
-            })
-            .returning({ id: artists.id });
-          artistId = newArtist[0].id;
-        }
+        // Always create a new artist entry for each event
+        const newArtist = await db
+          .insert(artists)
+          .values({
+            name: artist.name,
+          })
+          .returning({ id: artists.id });
+        artistId = newArtist[0].id;
 
         await db.insert(eventArtists).values({
           eventId: eventId,
@@ -197,40 +171,13 @@ export const Mutations = {
       for (const artist of input.event.artists) {
         let artistId;
 
-        const existingArtistByName = await db
-          .select({ id: artists.id })
-          .from(artists)
-          .where(eq(artists.name, artist.name));
-
-        if (existingArtistByName.length > 0) {
-          artistId = existingArtistByName[0].id;
-        } else if (artist.id) {
-          const existingArtistById = await db
-            .select({ id: artists.id })
-            .from(artists)
-            .where(eq(artists.id, artist.id));
-
-          if (existingArtistById.length > 0) {
-            artistId = existingArtistById[0].id;
-          } else {
-            const newArtist = await db
-              .insert(artists)
-              .values({
-                id: artist.id,
-                name: artist.name,
-              })
-              .returning({ id: artists.id });
-            artistId = newArtist[0].id;
-          }
-        } else {
-          const newArtist = await db
-            .insert(artists)
-            .values({
-              name: artist.name,
-            })
-            .returning({ id: artists.id });
-          artistId = newArtist[0].id;
-        }
+        const newArtist = await db
+          .insert(artists)
+          .values({
+            name: artist.name,
+          })
+          .returning({ id: artists.id });
+        artistId = newArtist[0].id;
 
         await db.insert(eventArtists).values({
           eventId: input.event.id,

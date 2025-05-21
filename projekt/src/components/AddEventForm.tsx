@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ImageIcon, Loader2, Plus, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -45,7 +45,7 @@ const EVENT_CATEGORIES = [
 
 const DEFAULT_VALUES: EventFormValues = {
   title: '',
-  artists: [{ id: crypto.randomUUID(), name: '' }],
+  artists: [],
   organizer: '',
   description: '',
   category: 'Muzyka',
@@ -86,13 +86,22 @@ export default function AddEventForm() {
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
-    defaultValues: DEFAULT_VALUES,
+    defaultValues: {
+      ...DEFAULT_VALUES,
+      artists: [{ id: crypto.randomUUID(), name: '' }],
+    },
   });
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: 'artists',
   });
+
+  useEffect(() => {
+    if (fields.length === 0) {
+      append({ id: crypto.randomUUID(), name: '' });
+    }
+  }, [fields.length, append]);
 
   const handleFileSelected = (file: File) => {
     setImageFile(file);

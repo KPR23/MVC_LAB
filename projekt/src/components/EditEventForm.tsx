@@ -75,10 +75,11 @@ export default function EditEventForm(event: EventFormValues) {
     defaultValues: {
       ...event,
       price: event.price / 100,
-      artists: event.artists?.map((artist) => ({
-        id: artist.id,
-        name: artist.name || '',
-      })) || [{ id: crypto.randomUUID(), name: '' }],
+      artists:
+        event.artists?.map((artist) => ({
+          id: artist.id,
+          name: artist.name || '',
+        })) || [],
     },
     mode: 'onChange',
   });
@@ -89,14 +90,21 @@ export default function EditEventForm(event: EventFormValues) {
   });
 
   useEffect(() => {
+    if (fields.length === 0) {
+      append({ id: crypto.randomUUID(), name: '' });
+    }
+  }, [fields.length, append]);
+
+  useEffect(() => {
     if (event.id) {
       const formData = {
         ...event,
         price: event.price / 100,
-        artists: event.artists?.map((artist) => ({
-          id: artist.id,
-          name: artist.name || '',
-        })) || [{ id: crypto.randomUUID(), name: '' }],
+        artists:
+          event.artists?.map((artist) => ({
+            id: artist.id,
+            name: artist.name || '',
+          })) || [],
       };
       form.reset(formData);
     }

@@ -20,10 +20,11 @@ export default async function EditEventPage(props: {
   if (event) {
     const formattedEvent = {
       ...event,
-      artists: event.artistsData?.map((artist) => ({
-        id: artist.id,
-        name: artist.name,
-      })) || [{ id: crypto.randomUUID(), name: '' }],
+      artists:
+        event.artistsData?.map((artist) => ({
+          id: artist.id,
+          name: artist.name,
+        })) || [],
     };
 
     return (
